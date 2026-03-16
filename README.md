@@ -10,16 +10,19 @@ Cross-platform Pi package that combines:
 
 Tool output is designed for humans: source diffs, line annotations, timing breakdowns, absolute paths repeated on every line. Useful on a terminal. Expensive in a model context, especially on failure when output is most verbose and the model needs to act fast.
 
+Test runners: 3 tests, 1 passing, 1 assertion failure, 1 unexpected error.
+Linters: 1 unused variable warning in a single file.
+
 | Parser | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
-| pytest-json-report | 299 | 65 | **78%** | 2 tests, 1 failure, default verbose output |
-| vitest-json | 239 | 72 | **70%** | 27 tests, 1 failure, default reporter with source diff |
-| rspec-json | 735 | 153 | **79%** | 3 tests, 2 failures, default output with backtrace |
-| minitest-text | 463 | 129 | **72%** | 3 tests, 2 failures, default output with backtrace |
-| ruff-json | 354 | 234 | **34%** | 5 errors, source context + help lines per error |
-| eslint-json | 305 | 299 | **2%** | 9 warnings across 3 files, already compact formatter |
+| pytest-json-report | 1667 | 213 | **87%** | verbose output with source snippets and summary footer |
+| vitest-json | 1270 | 210 | **83%** | source diff with inline arrows per failure |
+| rspec-json | 735 | 153 | **79%** | default output with backtrace |
+| minitest-text | 464 | 129 | **72%** | default output with backtrace |
+| ruff-json | 375 | 135 | **64%** | source context + help text per error |
+| eslint-json | 206 | 151 | **27%** | already compact formatter |
 
-The noisier the tool's default output, the more `structured_return` pays off. For eslint the win comes at scale as errors spread across files — relative paths and grouped output keep per-error cost flat while raw bash pays a full absolute path header per file.
+Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
 
 ## Built-in parsers
 - `pytest-json-report`
