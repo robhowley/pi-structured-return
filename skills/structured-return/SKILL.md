@@ -38,5 +38,8 @@ Prefer better output at the source.
 ### ruff format
 - `ruff format --check .` (no structured_return — json output not supported)
 
+### vitest
+- `structured_return({ command: "vitest run --reporter=json", parseAs: "vitest-json" })`
+
 ### eslint
 - `structured_return({ command: "eslint . -f json", parseAs: "eslint-json" })`

@@ -9,4 +9,4 @@
 
 ## javascript / typescript
 - `jest --json`
-- `vitest --reporter=json`
+- `structured_return({ command: "vitest run --reporter=json", parseAs: "vitest-json" })`

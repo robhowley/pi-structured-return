@@ -9,7 +9,7 @@ import { ensureRunDir, writeRunArtifacts } from "./storage/log-store";
 import { loadProjectConfig } from "./config/project-config";
 import { resolveParser } from "./config/registry";
 
-const BUILT_IN_PARSER_IDS = ["pytest-json-report", "ruff-json", "eslint-json", "tail-fallback"];
+const BUILT_IN_PARSER_IDS = ["pytest-json-report", "ruff-json", "eslint-json", "vitest-json", "tail-fallback"];
 
 export default function structuredReturn(pi: ExtensionAPI) {
   pi.registerCommand("sr-parsers", {

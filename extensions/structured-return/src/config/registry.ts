@@ -3,12 +3,14 @@ import type { ParserModule, ParserRegistration } from "../types";
 import pytestJsonReport from "../parsers/pytest-json-report";
 import ruffJson from "../parsers/ruff-json";
 import eslintJson from "../parsers/eslint-json";
+import vitestJson from "../parsers/vitest-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
   "pytest-json-report": pytestJsonReport,
   "ruff-json": ruffJson,
   "eslint-json": eslintJson,
+  "vitest-json": vitestJson,
   "tail-fallback": tailFallback,
 };
 
@@ -28,6 +30,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "pytest-json-report",
     detect: (argv) => argv.includes("pytest") && argv.includes("--json-report"),
+  },
+  {
+    parserId: "vitest-json",
+    detect: (argv) => argv.includes("vitest") && argv.includes("--reporter=json"),
   },
 ];
 
