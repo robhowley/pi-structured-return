@@ -13,16 +13,16 @@ Tool output is designed for humans: source diffs, line annotations, timing break
 Test runners: 3 tests, 1 passing, 1 assertion failure, 1 unexpected error.
 Linters: 1 unused variable warning in a single file.
 
-| Parser | Raw | Structured | Reduction | Notes |
+| Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
 |---|---|---|---|---|
-| pytest-json-report | 1667 | 213 | **87%** | verbose output with source snippets and summary footer |
-| vitest-json | 1270 | 210 | **83%** | source diff with inline arrows per failure |
-| rspec-json | 735 | 153 | **79%** | default output with backtrace |
-| minitest-text | 464 | 129 | **72%** | default output with backtrace |
-| ruff-json | 375 | 135 | **64%** | source context + help text per error |
-| eslint-json | 206 | 151 | **27%** | already compact formatter |
+| pytest-json-report | 446 | 59 | **87%** | verbose output with source snippets and summary footer |
+| vitest-json | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| rspec-json | 212 | 55 | **74%** | default output with backtrace |
+| minitest-text | 168 | 59 | **65%** | default output with backtrace |
+| ruff-json | 107 | 52 | **51%** | source context + help text per error |
+| eslint-json | 64 | 59 | **8%** | already compact formatter |
 
-Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
+Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
 
 ## Built-in parsers
 - `pytest-json-report`
