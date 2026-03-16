@@ -55,16 +55,6 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const parsed = await parser.parse(runCtx);
       const result = finalizeResult(parsed, exitCode, logs.logPath);
 
-      pi.sendMessage(
-        {
-          customType: "structured-return-result",
-          content: `${args.command} → ${result.summary}`,
-          display: false,
-          details: result,
-        },
-        { triggerTurn: true, deliverAs: "followUp" }
-      );
-
       return {
         content: [{ type: "text" as const, text: `${args.command} → ${result.summary}` }],
         details: { exitCode, logPath: logs.logPath, parser: parser.id },
