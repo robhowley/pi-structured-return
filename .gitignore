@@ -1,0 +1,10 @@
+# dependencies
+node_modules/
+
+.pi
+
+# test/lint output
+.tmp/
+
+# OS
+.DS_Store

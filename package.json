@@ -1,0 +1,43 @@
+{
+  "name": "@robhowley/pi-structured-return",
+  "version": "0.1.0",
+  "description": "Structured command execution for Pi agents: compact results for the model, full logs for humans.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robhowley/pi-structured-return"
+  },
+  "homepage": "https://github.com/robhowley/pi-structured-return",
+  "bugs": {
+    "url": "https://github.com/robhowley/pi-structured-return/issues"
+  },
+  "keywords": [
+    "pi-package"
+  ],
+  "files": [
+    "extensions",
+    "skills",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "pi": {
+    "extensions": ["./extensions/structured-return/src/index.ts"],
+    "skills": ["./skills/structured-return"]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p extensions/structured-return/tsconfig.json",
+    "format:check": "prettier --check 'extensions/structured-return/src/**/*.ts'",
+    "format": "prettier --write 'extensions/structured-return/src/**/*.ts'"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@sinclair/typebox": "^0.34.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
