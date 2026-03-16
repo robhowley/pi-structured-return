@@ -18,6 +18,7 @@ Linters: 1 unused variable warning in a single file.
 | pytest-json-report | 446 | 59 | **87%** | verbose output with source snippets and summary footer |
 | vitest-json | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
 | rspec-json | 212 | 55 | **74%** | default output with backtrace |
+| junit-xml | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | minitest-text | 168 | 59 | **65%** | default output with backtrace |
 | ruff-json | 107 | 52 | **51%** | source context + help text per error |
 | eslint-json | 64 | 59 | **8%** | already compact formatter |
@@ -31,6 +32,7 @@ Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than
 - `vitest-json`
 - `rspec-json`
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
+- `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
 
 ## Agentic loops
 

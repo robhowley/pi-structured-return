@@ -6,6 +6,7 @@ import eslintJson from "../parsers/eslint-json";
 import vitestJson from "../parsers/vitest-json";
 import rspecJson from "../parsers/rspec-json";
 import minitestText from "../parsers/minitest-text";
+import junitXml from "../parsers/junit-xml";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -15,6 +16,7 @@ const builtIns: Record<string, ParserModule> = {
   "vitest-json": vitestJson,
   "rspec-json": rspecJson,
   "minitest-text": minitestText,
+  "junit-xml": junitXml,
   "tail-fallback": tailFallback,
 };
 
@@ -44,6 +46,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
     detect: (argv) =>
       argv.includes("rspec") &&
       (argv.includes("--format=json") || (argv.includes("--format") && argv.includes("json"))),
+  },
+  {
+    parserId: "junit-xml",
+    detect: (argv) => argv.some((a) => a.startsWith("--junitxml") || a.startsWith("--junit-xml") || a === "--format=junit"),
   },
 ];
 

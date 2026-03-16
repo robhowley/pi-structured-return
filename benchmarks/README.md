@@ -68,6 +68,24 @@ ruby test-runners/minitest/math_test.rb
 structured_return({ command: "ruby test-runners/minitest/math_test.rb", parseAs: "minitest-text" })
 ```
 
+### gradle / junit-xml
+
+Setup (run once from `test-runners/java/`):
+
+```bash
+cd test-runners/java && gradle test
+```
+
+Run both commands from `test-runners/java/`:
+
+```bash
+# raw
+gradle test
+
+# structured
+structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-MathTest.xml"] })
+```
+
 ## Linters
 
 Both linter benchmarks use a single file with one unused variable — a conservative lower bound. Reduction grows as violations spread across more files.

@@ -45,3 +45,10 @@ Prefer better output at the source.
 
 ### minitest
 - `structured_return({ command: "ruby [any minitest args]", parseAs: "minitest-text" })` — no format flags needed; works with plain ruby invocation
+
+### junit-xml
+JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.
+
+- `structured_return({ command: "[tool] [args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — pytest, nose2, and others that write to a file
+- `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
+- `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — Maven surefire same pattern

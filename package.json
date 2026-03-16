@@ -38,6 +38,9 @@
     "format:check": "prettier --check 'extensions/structured-return/src/**/*.ts'",
     "format": "prettier --write 'extensions/structured-return/src/**/*.ts'"
   },
+  "dependencies": {
+    "fast-xml-parser": "^5.4.1"
+  },
   "devDependencies": {
     "@mariozechner/pi-coding-agent": "*",
     "@sinclair/typebox": "^0.34.0",
