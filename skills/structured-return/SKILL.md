@@ -1,45 +1,47 @@
 ---
 name: structured-return
-description: Choose compact, machine-readable commands across common test, lint, build, git, and log workflows. Use when raw terminal output would be noisy and the agent should prefer json, junit/xml, porcelain, quiet, no-pretty, or narrow-scope command forms.
+description: Choose compact, machine-readable commands across common test, lint, build, and log workflows. Use when raw terminal output would be noisy and the agent should prefer json, junit/xml, porcelain, quiet, no-pretty, or narrow-scope command forms.
 ---
 
 # structured-return
 
 Prefer better output at the source.
 
+## What structured_return does
+
+`structured_return` is a tool — use it instead of `bash` for lint, test, and build commands. It runs the command, stores the full log, and returns a compact parsed result to the model. When a parser matches, only the signal (failures, errors, summary) comes back into context. When no parser matches, it falls back to the last 200 lines of output plus a log path — still better than dumping everything into context via `bash`.
+
 ## Rules
 
 1. Before running any lint, test, or build command, check for project-defined scripts (`package.json`, `Makefile`, `pyproject.toml`, etc.). If a script exists for the task, inspect it to identify the underlying tool and the scope/paths it uses. Then invoke that tool directly with machine-readable flags and the same scope — rather than running through the script wrapper.
-2. Prefer machine-readable output when supported.
+2. Use `structured_return` instead of `bash` for lint, test, and build commands. For tools with a built-in parser, use the command form shown in the examples below. For tools without one, use known machine-readable flags (`--json`, `--format json`, `--message-format=json`, `--console=plain`, `--porcelain`, etc.) and let the tail fallback handle the result.
 3. Otherwise prefer quiet, plain, no-color, and narrow-scope modes.
 4. Prefer file/test-specific runs before full-suite runs.
 5. Prefer bounded log reads over full log dumps.
-6. Do not invent flags. Use known patterns from references.
+6. Do not invent flags. Use known patterns from examples below or your own knowledge of the tool.
 7. When using `structured_return`, pass explicit parser hints when known.
 8. If a repo defines project-local parser mappings in `.pi/structured-return.json`, prefer those mappings.
-
-## Categories
-
-- Tests → see [references/tests.md](references/tests.md)
-- Lint/static analysis → see [references/lint.md](references/lint.md)
-- Build/compile → see [references/build.md](references/build.md)
-- Fallback rules → see [references/fallback.md](references/fallback.md)
 
 ## Examples
 
 ### pytest
-- `structured_return({ command: "pytest --json-report --json-report-file=.tmp/pytest-report.json", parseAs: "pytest-json-report", artifactPaths: [".tmp/pytest-report.json"] })`
-- `structured_return({ command: "pytest --junitxml=.tmp/pytest-report.xml -q", parseAs: "junit-xml", artifactPaths: [".tmp/pytest-report.xml"] })`
-- `structured_return({ command: "pytest -q" })`
+- `structured_return({ command: "pytest [any pytest args] --json-report --json-report-file=.tmp/pytest-report.json", parseAs: "pytest-json-report", artifactPaths: [".tmp/pytest-report.json"] })` — append the json-report flags to whatever pytest invocation is needed; scope, filters, markers, etc. go in `[any pytest args]`
+- `structured_return({ command: "pytest -q" })` — fallback when json-report is unavailable
 
 ### ruff check
-- `structured_return({ command: "ruff check . --output-format=json", parseAs: "ruff-json" })`
+- `structured_return({ command: "ruff check [any ruff args] --output-format=json", parseAs: "ruff-json" })` — scope, selects, ignores, etc. go in `[any ruff args]`
 
 ### ruff format
 - `ruff format --check .` (no structured_return — json output not supported)
 
 ### vitest
-- `structured_return({ command: "vitest run --reporter=json", parseAs: "vitest-json" })`
+- `structured_return({ command: "vitest run [any vitest args] --reporter=json", parseAs: "vitest-json" })` — file paths, filters, etc. go in `[any vitest args]`
 
 ### eslint
-- `structured_return({ command: "eslint . -f json", parseAs: "eslint-json" })`
+- `structured_return({ command: "eslint [any eslint args] -f json", parseAs: "eslint-json" })` — paths, configs, rules, etc. go in `[any eslint args]`
+
+### rspec
+- `structured_return({ command: "bundle exec rspec [any rspec args] --format json", parseAs: "rspec-json" })` — `--format json` is required; without it output is not parseable
+
+### minitest
+- `structured_return({ command: "ruby [any minitest args]", parseAs: "minitest-text" })` — no format flags needed; works with plain ruby invocation
