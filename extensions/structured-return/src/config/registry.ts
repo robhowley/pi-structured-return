@@ -4,6 +4,7 @@ import pytestJsonReport from "../parsers/pytest-json-report";
 import ruffJson from "../parsers/ruff-json";
 import eslintJson from "../parsers/eslint-json";
 import vitestJson from "../parsers/vitest-json";
+import rspecJson from "../parsers/rspec-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -11,6 +12,7 @@ const builtIns: Record<string, ParserModule> = {
   "ruff-json": ruffJson,
   "eslint-json": eslintJson,
   "vitest-json": vitestJson,
+  "rspec-json": rspecJson,
   "tail-fallback": tailFallback,
 };
 
@@ -34,6 +36,12 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "vitest-json",
     detect: (argv) => argv.includes("vitest") && argv.includes("--reporter=json"),
+  },
+  {
+    parserId: "rspec-json",
+    detect: (argv) =>
+      argv.includes("rspec") &&
+      (argv.includes("--format=json") || (argv.includes("--format") && argv.includes("json"))),
   },
 ];
 
