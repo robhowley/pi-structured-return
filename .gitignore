@@ -5,3 +5,7 @@ __pycache__
 .tmp/
 .dev
 .DS_Store
+
+# Gradle
+benchmarks/test-runners/java/.gradle/
+benchmarks/test-runners/java/build/
