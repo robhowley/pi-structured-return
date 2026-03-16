@@ -16,7 +16,7 @@ Prefer better output at the source.
 5. Prefer bounded log reads over full log dumps.
 6. Do not invent flags. Use known patterns from references.
 7. When using `structured_return`, pass explicit parser hints when known.
-8. If a repo defines project-local parser mappings in `.pi/machine-readable.json`, prefer those mappings.
+8. If a repo defines project-local parser mappings in `.pi/structured-return.json`, prefer those mappings.
 
 ## Categories
 

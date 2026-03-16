@@ -24,7 +24,7 @@ export default function structuredReturn(pi: ExtensionAPI) {
 
       const projectRegistrations = loadProjectConfig(ctx.cwd);
       lines.push("");
-      lines.push("project-local (.pi/machine-readable.json):");
+      lines.push("project-local (.pi/structured-return.json):");
       if (projectRegistrations.length === 0) {
         lines.push("  (none)");
       } else {

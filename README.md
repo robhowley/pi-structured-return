@@ -12,7 +12,7 @@ Built-in parsers:
 - eslint json
 
 Project-local extension point:
-- `.pi/machine-readable.json`
+- `.pi/structured-return.json`
 - `.pi/parsers/*.ts`
 
 Slash commands:
