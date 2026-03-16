@@ -15,6 +15,9 @@ Project-local extension point:
 - `.pi/machine-readable.json`
 - `.pi/parsers/*.ts`
 
+Slash commands:
+- `/sr-parsers` — list all registered parsers (built-in and project-local) with their match rules and targets
+
 Structured result schema:
 - `tool`
 - `exitCode`

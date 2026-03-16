@@ -9,7 +9,40 @@ import { ensureRunDir, writeRunArtifacts } from "./storage/log-store";
 import { loadProjectConfig } from "./config/project-config";
 import { resolveParser } from "./config/registry";
 
+const BUILT_IN_PARSER_IDS = ["pytest-json-report", "ruff-json", "eslint-json", "tail-fallback"];
+
 export default function structuredReturn(pi: ExtensionAPI) {
+  pi.registerCommand("sr-parsers", {
+    description: "List all structured-return parsers: built-ins and project-local registrations",
+    handler: async (_args, ctx) => {
+      const lines: string[] = ["structured-return parsers", ""];
+
+      lines.push("built-in:");
+      for (const id of BUILT_IN_PARSER_IDS) {
+        lines.push(`  ${id}`);
+      }
+
+      const projectRegistrations = loadProjectConfig(ctx.cwd);
+      lines.push("");
+      lines.push("project-local (.pi/machine-readable.json):");
+      if (projectRegistrations.length === 0) {
+        lines.push("  (none)");
+      } else {
+        for (const reg of projectRegistrations) {
+          const via = reg.parseAs ? `→ ${reg.parseAs}` : reg.module ? `→ module: ${reg.module}` : "";
+          const match = reg.match?.argvIncludes
+            ? `argv includes [${reg.match.argvIncludes.join(", ")}]`
+            : reg.match?.regex
+              ? `regex: ${reg.match.regex}`
+              : "(no match rule)";
+          lines.push(`  ${reg.id}  ${match}  ${via}`);
+        }
+      }
+
+      ctx.ui.notify(lines.join("\n"), "info");
+    },
+  });
+
   pi.on("before_agent_start", async (event) => {
     return {
       systemPrompt:
