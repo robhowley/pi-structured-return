@@ -15,6 +15,7 @@ Tool output is designed for humans: source diffs, line annotations, timing break
 | pytest-json-report | 299 | 65 | **78%** | 2 tests, 1 failure, default verbose output |
 | vitest-json | 239 | 72 | **70%** | 27 tests, 1 failure, default reporter with source diff |
 | rspec-json | 735 | 153 | **79%** | 3 tests, 2 failures, default output with backtrace |
+| minitest-text | 463 | 129 | **72%** | 3 tests, 2 failures, default output with backtrace |
 | ruff-json | 354 | 234 | **34%** | 5 errors, source context + help lines per error |
 | eslint-json | 305 | 299 | **2%** | 9 warnings across 3 files, already compact formatter |
 
@@ -26,6 +27,7 @@ The noisier the tool's default output, the more `structured_return` pays off. Fo
 - `eslint-json`
 - `vitest-json`
 - `rspec-json`
+- `minitest-text` (parses default minitest output — no flags or reporters needed)
 
 ## Project-local extension
 

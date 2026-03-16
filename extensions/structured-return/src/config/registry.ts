@@ -5,6 +5,7 @@ import ruffJson from "../parsers/ruff-json";
 import eslintJson from "../parsers/eslint-json";
 import vitestJson from "../parsers/vitest-json";
 import rspecJson from "../parsers/rspec-json";
+import minitestText from "../parsers/minitest-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -13,6 +14,7 @@ const builtIns: Record<string, ParserModule> = {
   "eslint-json": eslintJson,
   "vitest-json": vitestJson,
   "rspec-json": rspecJson,
+  "minitest-text": minitestText,
   "tail-fallback": tailFallback,
 };
 
