@@ -10,6 +10,14 @@ import { loadProjectConfig } from "./config/project-config";
 import { resolveParser } from "./config/registry";
 
 export default function structuredReturn(pi: ExtensionAPI) {
+  pi.on("before_agent_start", async (event) => {
+    return {
+      systemPrompt:
+        event.systemPrompt +
+        "\n\nWhen running lint, test, build, or other shell commands, load and follow the `structured-return` skill before choosing how to invoke them.",
+    };
+  });
+
   pi.registerTool({
     name: "structured_return",
     label: "Structured Return",
