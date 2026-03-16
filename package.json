@@ -24,11 +24,16 @@
     "access": "public"
   },
   "pi": {
-    "extensions": ["./extensions/structured-return/src/index.ts"],
-    "skills": ["./skills/structured-return"]
+    "extensions": [
+      "./extensions/structured-return/src/index.ts"
+    ],
+    "skills": [
+      "./skills/structured-return"
+    ]
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p extensions/structured-return/tsconfig.json",
+    "test": "vitest run --config extensions/structured-return/vitest.config.ts",
     "lint": "eslint 'extensions/structured-return/src/**/*.ts'",
     "format:check": "prettier --check 'extensions/structured-return/src/**/*.ts'",
     "format": "prettier --write 'extensions/structured-return/src/**/*.ts'"
@@ -39,6 +44,7 @@
     "eslint": "^9.0.0",
     "prettier": "^3.4.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.0.0"
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.0"
   }
 }

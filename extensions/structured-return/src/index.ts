@@ -103,7 +103,7 @@ export default function structuredReturn(pi: ExtensionAPI) {
   });
 }
 
-function formatResult(result: ParsedResult): string {
+export function formatResult(result: ParsedResult): string {
   const lines: string[] = [];
   if (result.cwd) lines.push(`cwd: ${result.cwd}`);
   lines.push(result.summary);
@@ -115,7 +115,7 @@ function formatResult(result: ParsedResult): string {
   return lines.join("\n");
 }
 
-function stripCdPrefix(command: string): string {
+export function stripCdPrefix(command: string): string {
   return command.replace(/^cd\s+\S+\s*&&\s*/, "");
 }
 
@@ -138,7 +138,7 @@ function runCommand(command: string, cwd: string): Promise<{ stdout: string; std
   });
 }
 
-function finalizeResult(
+export function finalizeResult(
   result: Omit<ParsedResult, "exitCode">,
   exitCode: number,
   logPath: string,
