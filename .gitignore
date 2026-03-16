@@ -1,10 +1,7 @@
-# dependencies
 node_modules/
-
+.venv
+__pycache__
 .pi
-
-# test/lint output
 .tmp/
-
-# OS
+.dev
 .DS_Store

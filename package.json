@@ -29,6 +29,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p extensions/structured-return/tsconfig.json",
+    "lint": "eslint 'extensions/structured-return/src/**/*.ts'",
     "format:check": "prettier --check 'extensions/structured-return/src/**/*.ts'",
     "format": "prettier --write 'extensions/structured-return/src/**/*.ts'"
   },

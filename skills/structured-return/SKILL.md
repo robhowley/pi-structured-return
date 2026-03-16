@@ -9,13 +9,14 @@ Prefer better output at the source.
 
 ## Rules
 
-1. Prefer machine-readable output when supported.
-2. Otherwise prefer quiet, plain, no-color, and narrow-scope modes.
-3. Prefer file/test-specific runs before full-suite runs.
-4. Prefer bounded log reads over full log dumps.
-5. Do not invent flags. Use known patterns from references.
-6. When using `structured_return`, pass explicit parser hints when known.
-7. If a repo defines project-local parser mappings in `.pi/machine-readable.json`, prefer those mappings.
+1. Before running any lint, test, or build command, check for project-defined scripts (`package.json`, `Makefile`, `pyproject.toml`, etc.). If a script exists for the task, inspect it to identify the underlying tool and the scope/paths it uses. Then invoke that tool directly with machine-readable flags and the same scope — rather than running through the script wrapper.
+2. Prefer machine-readable output when supported.
+3. Otherwise prefer quiet, plain, no-color, and narrow-scope modes.
+4. Prefer file/test-specific runs before full-suite runs.
+5. Prefer bounded log reads over full log dumps.
+6. Do not invent flags. Use known patterns from references.
+7. When using `structured_return`, pass explicit parser hints when known.
+8. If a repo defines project-local parser mappings in `.pi/machine-readable.json`, prefer those mappings.
 
 ## Categories
 
