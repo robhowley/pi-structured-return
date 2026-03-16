@@ -122,4 +122,5 @@ describe("vitest-json parser", () => {
     const result = await parser.parse(makeCtx(""));
     expect(result.status).toBe("error");
   });
+
 });
