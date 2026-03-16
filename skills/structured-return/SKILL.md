@@ -52,3 +52,16 @@ JUnit XML is the de facto standard output format across the JVM ecosystem and ma
 - `structured_return({ command: "[tool] [args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — pytest, nose2, and others that write to a file
 - `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
 - `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — Maven surefire same pattern
+
+#### Swift / XCTest (Swift Package Manager)
+
+`swift test` has native JUnit XML output via `--xunit-output` (Swift 5.7+). Use this for all SPM projects — no third-party reporter needed.
+
+- `structured_return({ command: "swift test --xunit-output .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — full test suite
+- `structured_return({ command: "swift test --filter MathTests --xunit-output .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — single test target or test case; `--filter` accepts a target name, class name, or `ClassName/testMethodName`
+
+#### Swift / XCTest (Xcode projects)
+
+`xcodebuild` output is high-volume and not directly parseable. Pipe through `xcbeautify` (install with `brew install xcbeautify`) to get JUnit XML:
+
+- `structured_return({ command: "xcodebuild test -scheme [scheme] -destination '[destination]' 2>&1 | xcbeautify --report junit --output .tmp", parseAs: "junit-xml", artifactPaths: [".tmp/report.junit.xml"] })` — xcbeautify writes `report.junit.xml` into the `--output` directory; run `xcodebuild -showdestinations -scheme [scheme]` first to find the correct `[destination]` string for the project
