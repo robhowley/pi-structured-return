@@ -32,6 +32,14 @@ Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than
 - `rspec-json`
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
 
+## Agentic loops
+
+The token table above measures a single run. In an agentic loop the cost compounds — every tool result accumulates in context for the life of the task.
+
+This applies to any loop: fixing a failing test suite, implementing a feature end-to-end, working through a migration, performance tuning execution times. The agent runs a command, reads the result, makes a change, runs it again. Each iteration adds another tool result to the window. With a noisy CLI that means paying for the same verbose boilerplate on every pass, and the agent has to hold all of it to reason about what changed.
+
+A parser converts each result to a one- or two-line signal. Over 15 iterations, the difference isn't 80 tokens vs 15 tokens — it's 1,200 tokens vs 225, on a single command, for a single task.
+
 ## Project-local extension
 
 Built-in parsers cover common tools. For everything else — internal CLIs, custom test runners, proprietary lint tools — add a `.pi/structured-return.json` to your project root.
