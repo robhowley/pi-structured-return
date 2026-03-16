@@ -12,9 +12,7 @@ const parser: ParserModule = {
     const output = fs.readFileSync(ctx.stdoutPath, "utf8");
 
     // "3 runs, 2 assertions, 1 failures, 1 errors, 0 skips"
-    const summaryMatch = output.match(
-      /(\d+) runs?, \d+ assertions?, (\d+) failures?, (\d+) errors?, (\d+) skips?/
-    );
+    const summaryMatch = output.match(/(\d+) runs?, \d+ assertions?, (\d+) failures?, (\d+) errors?, (\d+) skips?/);
     if (!summaryMatch) {
       return { tool: "minitest", status: "error", summary: "no minitest output found", logPath: ctx.logPath };
     }
@@ -89,9 +87,7 @@ function parseBlocks(output: string, cwd: string): ParsedFailure[] {
         const backtraceMatch = lines[i]?.match(/^\s+(.+\.rb):(\d+):/);
         failures.push({
           id,
-          file: backtraceMatch
-            ? path.relative(cwd, path.resolve(cwd, backtraceMatch[1]))
-            : undefined,
+          file: backtraceMatch ? path.relative(cwd, path.resolve(cwd, backtraceMatch[1])) : undefined,
           line: backtraceMatch ? parseInt(backtraceMatch[2], 10) : undefined,
           message: message || undefined,
         });

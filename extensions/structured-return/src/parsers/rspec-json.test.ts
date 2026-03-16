@@ -74,10 +74,7 @@ describe("rspec-json parser", () => {
 
   it("all passing → status pass, summary reflects passed count", async () => {
     const stdout = report(
-      [
-        passing("Foo works", "./spec/foo_spec.rb", 5),
-        passing("Bar works", "./spec/bar_spec.rb", 3),
-      ],
+      [passing("Foo works", "./spec/foo_spec.rb", 5), passing("Bar works", "./spec/bar_spec.rb", 3)],
       0
     );
     const result = await parser.parse(makeCtx(stdout));

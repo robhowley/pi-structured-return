@@ -23,7 +23,14 @@ function makeCtx(xml: string, cwd = "/project"): RunContext {
 const PASSING = (name: string, classname = "com.example.MyTest") =>
   `<testcase name="${name}" classname="${classname}" time="0.001"/>`;
 
-const FAILING = (name: string, classname: string, message: string, type = "AssertionError", file?: string, line?: number) => {
+const FAILING = (
+  name: string,
+  classname: string,
+  message: string,
+  type = "AssertionError",
+  file?: string,
+  line?: number
+) => {
   const fileAttr = file ? ` file="${file}"` : "";
   const lineAttr = line !== undefined ? ` line="${line}"` : "";
   return `<testcase name="${name}" classname="${classname}"${fileAttr}${lineAttr} time="0.001">

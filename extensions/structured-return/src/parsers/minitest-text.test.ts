@@ -92,9 +92,7 @@ describe("minitest-text parser", () => {
   });
 
   it("relative paths in output → kept relative", async () => {
-    const output = MIXED_OUTPUT
-      .replace(/\/project\/test\//g, "./test/")
-      .replace(/\/project\/test\//g, "./test/");
+    const output = MIXED_OUTPUT.replace(/\/project\/test\//g, "./test/").replace(/\/project\/test\//g, "./test/");
     const result = await parser.parse(makeCtx(output, "/project"));
     const failure = result.failures!.find((f) => f.id?.includes("multiplies"));
     expect(failure?.file).toBe("test/math_test.rb");

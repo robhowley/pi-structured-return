@@ -49,7 +49,8 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   },
   {
     parserId: "junit-xml",
-    detect: (argv) => argv.some((a) => a.startsWith("--junitxml") || a.startsWith("--junit-xml") || a === "--format=junit"),
+    detect: (argv) =>
+      argv.some((a) => a.startsWith("--junitxml") || a.startsWith("--junit-xml") || a === "--format=junit"),
   },
 ];
 

@@ -60,17 +60,12 @@ describe("vitest-json parser", () => {
         {
           name: "/project/src/foo.test.ts",
           status: "failed",
-          assertionResults: [
-            passing("foo passes"),
-            failing("foo fails A", "AssertionError: expected 1 to equal 2"),
-          ],
+          assertionResults: [passing("foo passes"), failing("foo fails A", "AssertionError: expected 1 to equal 2")],
         },
         {
           name: "/project/src/bar.test.ts",
           status: "failed",
-          assertionResults: [
-            failing("bar fails B", "AssertionError: expected true to be false"),
-          ],
+          assertionResults: [failing("bar fails B", "AssertionError: expected true to be false")],
         },
       ],
     };
@@ -90,9 +85,7 @@ describe("vitest-json parser", () => {
         {
           name: "/project/src/foo.test.ts",
           status: "failed",
-          assertionResults: [
-            failing("foo fails", "AssertionError: expected 1 to equal 2"),
-          ],
+          assertionResults: [failing("foo fails", "AssertionError: expected 1 to equal 2")],
         },
       ],
     };
@@ -122,5 +115,4 @@ describe("vitest-json parser", () => {
     const result = await parser.parse(makeCtx(""));
     expect(result.status).toBe("error");
   });
-
 });

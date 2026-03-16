@@ -26,7 +26,12 @@ describe("ruff-json parser", () => {
     const stdout = JSON.stringify([
       { filename: "/project/src/foo.py", code: "F401", message: "`os` imported but unused", location: { row: 1 } },
       { filename: "/project/src/foo.py", code: "E741", message: "Ambiguous variable name: `l`", location: { row: 5 } },
-      { filename: "/project/src/bar.py", code: "F841", message: "Local variable `x` is assigned to but never used", location: { row: 3 } },
+      {
+        filename: "/project/src/bar.py",
+        code: "F841",
+        message: "Local variable `x` is assigned to but never used",
+        location: { row: 3 },
+      },
     ]);
     const result = await parser.parse(makeCtx(stdout, cwd));
     expect(result.status).toBe("fail");
