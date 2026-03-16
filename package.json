@@ -23,6 +23,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "lint-staged": {
+    "extensions/structured-return/src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "pi": {
     "extensions": [
       "./extensions/structured-return/src/index.ts"
@@ -36,7 +42,8 @@
     "test": "vitest run --config extensions/structured-return/vitest.config.ts",
     "lint": "eslint 'extensions/structured-return/src/**/*.ts'",
     "format:check": "prettier --check 'extensions/structured-return/src/**/*.ts'",
-    "format": "prettier --write 'extensions/structured-return/src/**/*.ts'"
+    "format": "prettier --write 'extensions/structured-return/src/**/*.ts'",
+    "prepare": "husky"
   },
   "dependencies": {
     "fast-xml-parser": "^5.4.1"
@@ -45,6 +52,8 @@
     "@mariozechner/pi-coding-agent": "*",
     "@sinclair/typebox": "^0.34.0",
     "eslint": "^9.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.4.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.0.0",

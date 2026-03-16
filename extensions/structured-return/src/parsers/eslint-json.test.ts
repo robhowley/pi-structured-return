@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import parser from "./eslint-json";
 import type { RunContext } from "../types";
 
@@ -46,9 +46,7 @@ describe("eslint-json parser", () => {
   });
 
   it("no errors → empty failures, status pass", async () => {
-    const stdout = JSON.stringify([
-      { filePath: "/project/src/foo.ts", messages: [] },
-    ]);
+    const stdout = JSON.stringify([{ filePath: "/project/src/foo.ts", messages: [] }]);
     const result = await parser.parse(makeCtx(stdout));
     expect(result.status).toBe("pass");
     expect(result.failures).toHaveLength(0);
