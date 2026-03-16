@@ -56,7 +56,7 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const result = finalizeResult(parsed, exitCode, logs.logPath);
 
       return {
-        content: [{ type: "text" as const, text: `${args.command} → ${result.summary}` }],
+        content: [{ type: "text" as const, text: `${args.command} → ${formatResult(result)}` }],
         details: { exitCode, logPath: logs.logPath, parser: parser.id },
       };
     },
@@ -68,6 +68,16 @@ export default function structuredReturn(pi: ExtensionAPI) {
       return new Text(text, 0, 0);
     },
   });
+}
+
+function formatResult(result: ParsedResult): string {
+  const lines: string[] = [result.summary];
+  for (const f of result.failures ?? []) {
+    const location = [f.file, f.line].filter(Boolean).join(":");
+    const rule = f.rule ? `  [${f.rule}]` : "";
+    lines.push(`  ${location}  ${f.message ?? ""}${rule}`);
+  }
+  return lines.join("\n");
 }
 
 function shellSplit(command: string): string[] {
