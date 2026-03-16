@@ -17,10 +17,21 @@ structured_return({ command: "eslint src/ -f json", parseAs: "eslint-json" })
 
 ## ruff
 
-Must include `--output-format=json`.
+### ruff check
+
+Must include `--output-format=json`. Only applies to `ruff check` — not `ruff format`.
 
 ```
 structured_return({ command: "ruff check . --output-format=json", parseAs: "ruff-json" })
+```
+
+### ruff format
+
+`ruff format` does not support `--output-format=json`. Do not use `ruff-json` as the parser. Run without `structured_return` or use plain flags.
+
+```
+ruff format --check .
+ruff format --check . -q
 ```
 
 ## tsc

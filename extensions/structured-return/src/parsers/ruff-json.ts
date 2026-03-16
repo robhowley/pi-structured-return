@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import type { ParserModule } from "../types";
 
 interface RuffItem {
@@ -13,13 +14,16 @@ const parser: ParserModule = {
   async parse(ctx) {
     const stdout = fs.readFileSync(ctx.stdoutPath, "utf8").trim();
     const items = stdout ? (JSON.parse(stdout) as RuffItem[]) : [];
-    const failures = (Array.isArray(items) ? items : []).map((item) => ({
-      id: `${item.filename}:${item.location?.row}:${item.code}`,
-      file: item.filename,
-      line: item.location?.row,
-      message: item.message,
-      rule: item.code,
-    }));
+    const failures = (Array.isArray(items) ? items : []).map((item) => {
+      const relPath = path.relative(ctx.cwd, item.filename);
+      return {
+        id: `${relPath}:${item.location?.row}:${item.code}`,
+        file: relPath,
+        line: item.location?.row,
+        message: item.message,
+        rule: item.code,
+      };
+    });
     return {
       tool: "ruff",
       status: failures.length > 0 ? "fail" : "pass",

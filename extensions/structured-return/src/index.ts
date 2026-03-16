@@ -86,10 +86,10 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const registrations = loadProjectConfig(cwd);
       const parser = await resolveParser({ cwd, parseAs: args.parseAs, argv, registrations });
       const parsed = await parser.parse(runCtx);
-      const result = finalizeResult(parsed, exitCode, logs.logPath);
+      const result = finalizeResult(parsed, exitCode, logs.logPath, cwd);
 
       return {
-        content: [{ type: "text" as const, text: `${args.command} → ${formatResult(result)}` }],
+        content: [{ type: "text" as const, text: `${stripCdPrefix(args.command)} → ${formatResult(result)}` }],
         details: { exitCode, logPath: logs.logPath, parser: parser.id },
       };
     },
@@ -104,13 +104,19 @@ export default function structuredReturn(pi: ExtensionAPI) {
 }
 
 function formatResult(result: ParsedResult): string {
-  const lines: string[] = [result.summary];
+  const lines: string[] = [];
+  if (result.cwd) lines.push(`cwd: ${result.cwd}`);
+  lines.push(result.summary);
   for (const f of result.failures ?? []) {
     const location = [f.file, f.line].filter(Boolean).join(":");
     const rule = f.rule ? `  [${f.rule}]` : "";
     lines.push(`  ${location}  ${f.message ?? ""}${rule}`);
   }
   return lines.join("\n");
+}
+
+function stripCdPrefix(command: string): string {
+  return command.replace(/^cd\s+\S+\s*&&\s*/, "");
 }
 
 function shellSplit(command: string): string[] {
@@ -132,11 +138,17 @@ function runCommand(command: string, cwd: string): Promise<{ stdout: string; std
   });
 }
 
-function finalizeResult(result: Omit<ParsedResult, "exitCode">, exitCode: number, logPath: string): ParsedResult {
+function finalizeResult(
+  result: Omit<ParsedResult, "exitCode">,
+  exitCode: number,
+  logPath: string,
+  cwd: string
+): ParsedResult {
   if (result.status === "error" && exitCode === 0) {
     return {
       ...result,
       exitCode,
+      cwd,
       status: "pass",
       summary:
         result.summary === "no parser matched; returning tail + log path"
@@ -145,5 +157,5 @@ function finalizeResult(result: Omit<ParsedResult, "exitCode">, exitCode: number
       logPath,
     };
   }
-  return { ...result, exitCode, logPath };
+  return { ...result, exitCode, cwd, logPath };
 }

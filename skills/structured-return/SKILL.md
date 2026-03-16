@@ -32,8 +32,11 @@ Prefer better output at the source.
 - `structured_return({ command: "pytest --junitxml=.tmp/pytest-report.xml -q", parseAs: "junit-xml", artifactPaths: [".tmp/pytest-report.xml"] })`
 - `structured_return({ command: "pytest -q" })`
 
-### ruff
+### ruff check
 - `structured_return({ command: "ruff check . --output-format=json", parseAs: "ruff-json" })`
+
+### ruff format
+- `ruff format --check .` (no structured_return — json output not supported)
 
 ### eslint
 - `structured_return({ command: "eslint . -f json", parseAs: "eslint-json" })`

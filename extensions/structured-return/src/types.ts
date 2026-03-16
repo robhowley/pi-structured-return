@@ -11,6 +11,7 @@ export type ParsedResult = {
   exitCode: number;
   status: "pass" | "fail" | "error";
   summary: string;
+  cwd?: string;
   failures?: ParsedFailure[];
   artifact?: string;
   logPath?: string;

@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import type { ParserModule } from "../types";
 
 const parser: ParserModule = {
@@ -8,10 +9,11 @@ const parser: ParserModule = {
     const files = stdout ? JSON.parse(stdout) : [];
     const failures = [] as Array<{ id: string; file?: string; line?: number; message?: string; rule?: string }>;
     for (const file of Array.isArray(files) ? files : []) {
+      const relPath = path.relative(ctx.cwd, file.filePath);
       for (const msg of file.messages ?? []) {
         failures.push({
-          id: `${file.filePath}:${msg.line}:${msg.ruleId ?? "unknown"}`,
-          file: file.filePath,
+          id: `${relPath}:${msg.line}:${msg.ruleId ?? "unknown"}`,
+          file: relPath,
           line: msg.line,
           message: msg.message,
           rule: msg.ruleId ?? undefined,
