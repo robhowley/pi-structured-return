@@ -148,6 +148,27 @@ describe("junit-xml parser", () => {
     });
   });
 
+  describe("pytest --junitxml output", () => {
+    it("extracts file and line from failure body when no file attr present", async () => {
+      const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <testsuites name="pytest tests">
+          <testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2">
+            <testcase classname="tests.test_math" name="test_adds" time="0.000"/>
+            <testcase classname="tests.test_math" name="test_multiplies" time="0.000">
+              <failure message="assert (3 * 4) == 99">def test_multiplies():
+&gt;       assert 3 * 4 == 99
+E       assert (3 * 4) == 99
+
+tests/test_math.py:5: AssertionError</failure>
+            </testcase>
+          </testsuite>
+        </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.failures![0].file).toBe("tests/test_math.py");
+      expect(result.failures![0].line).toBe(5);
+    });
+  });
+
   describe("multi-suite totals", () => {
     it("failures and errors summed across suites", async () => {
       const xml = `<testsuites>

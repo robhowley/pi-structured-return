@@ -25,7 +25,7 @@ All test runner benchmarks use the same three-test scenario: one passing test, o
 pytest test-runners/pytest/test_math.py -v
 
 # structured
-structured_return({ command: "pytest test-runners/pytest/test_math.py --json-report --json-report-file=/tmp/pytest-report.json", parseAs: "pytest-json-report", artifactPaths: ["/tmp/pytest-report.json"] })
+structured_return({ command: "pytest test-runners/pytest/test_math.py --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
 ```
 
 ### vitest

@@ -38,6 +38,19 @@ const xmlParser = new XMLParser({
   isArray: (name) => ["testsuite", "testcase"].includes(name),
 });
 
+/** Extract file and line from pytest-style failure body: last non-empty "file:line: ..." line. */
+function parseBodyLocation(text: string): { file: string; line: number } | undefined {
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const m = lines[i].match(/^([^:]+\.py):(\d+):/);
+    if (m) return { file: m[1], line: Number(m[2]) };
+  }
+  return undefined;
+}
+
 function resolveFile(tc: JUnitTestCase, suite: JUnitTestSuite, cwd: string): string | undefined {
   const raw = tc.file ?? suite.file;
   if (raw) return path.relative(cwd, path.resolve(cwd, raw));
@@ -67,8 +80,12 @@ const parser: ParserModule = {
         const problem = tc.failure ?? tc.error;
         if (!problem) continue;
 
-        const file = resolveFile(tc, suite, ctx.cwd);
-        const line = tc.line !== undefined ? Number(tc.line) : undefined;
+        const bodyLocation = problem["#text"] ? parseBodyLocation(problem["#text"]) : undefined;
+        const file =
+          (tc.file ?? suite.file)
+            ? resolveFile(tc, suite, ctx.cwd)
+            : (bodyLocation?.file ?? resolveFile(tc, suite, ctx.cwd));
+        const line = tc.line !== undefined ? Number(tc.line) : bodyLocation?.line;
         const id = [file, line, tc.name].filter(Boolean).join(":");
 
         failures.push({
