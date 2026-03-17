@@ -1,0 +1,11 @@
+node_modules/
+.venv
+__pycache__
+.pi
+.tmp/
+.dev
+.DS_Store
+
+# Gradle
+benchmarks/test-runners/java/.gradle/
+benchmarks/test-runners/java/build/
