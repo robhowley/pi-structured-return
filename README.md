@@ -27,12 +27,13 @@ Linters: 1 unused variable warning in a single file.
 Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
 
 ## Built-in parsers
-- `ruff-json` (`ruff check` only — `ruff format` has no json support)
-- `eslint-json`
+- `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
 - `vitest-json`
 - `rspec-json`
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
-- `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
+- `ruff-json` (`ruff check` only — `ruff format` has no json support)
+- `eslint-json`
+
 
 ## Before / after
 

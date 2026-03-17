@@ -48,6 +48,12 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   },
 ];
 
+export function listParsers(): { id: string; autoDetect: boolean }[] {
+  const builtInIds = Object.keys(builtIns).filter((id) => id !== "tail-fallback");
+  const autoDetectIds = new Set(AUTO_DETECT.map((d) => d.parserId));
+  return builtInIds.map((id) => ({ id, autoDetect: autoDetectIds.has(id) }));
+}
+
 export async function resolveParser(opts: {
   cwd: string;
   parseAs?: string;
