@@ -34,15 +34,65 @@ Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
 - `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
 
+## Before / after
+
+**Raw pytest output (446 tokens):** *(pytest does have a JSON mode — but piping raw `--json-report` output to the model is noisier than the default formatter, not cleaner. The parser reads the JSON and extracts only what matters.)*
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.14.2, pytest-9.0.2
+collecting ... collected 3 items
+
+test_math.py::test_adds_two_numbers_correctly PASSED                     [ 33%]
+test_math.py::test_multiplies_two_numbers_correctly FAILED               [ 66%]
+test_math.py::test_does_not_divide_by_zero FAILED                        [100%]
+
+=================================== FAILURES ===================================
+____________________ test_multiplies_two_numbers_correctly _____________________
+
+    def test_multiplies_two_numbers_correctly():
+>       assert 3 * 4 == 99
+E       assert (3 * 4) == 99
+
+test_math.py:5: AssertionError
+_________________________ test_does_not_divide_by_zero _________________________
+
+    def test_does_not_divide_by_zero():
+>       result = 1 / 0
+                 ^^^^^
+E       ZeroDivisionError: division by zero
+
+test_math.py:8: ZeroDivisionError
+=========================== short test summary info ============================
+FAILED test_math.py::test_multiplies_two_numbers_correctly
+FAILED test_math.py::test_does_not_divide_by_zero - ZeroDivisionError: ...
+========================= 2 failed, 1 passed in 0.01s ==========================
+```
+
+**Structured result returned to the model (59 tokens):**
+```
+pytest test_math.py --json-report ... → cwd: project
+2 failed, 1 passed
+  test_math.py  AssertionError: assert (3 * 4) == 99
+  test_math.py  ZeroDivisionError: division by zero
+```
+
+## How it works
+
+1. The agent runs commands through `structured_return` instead of `bash`.
+2. Full output is captured and stored as a log.
+3. A parser converts noisy CLI output into a compact structured result. If no parser matches, the last 200 lines and the log path are returned as a fallback.
+4. The agent receives the structured result in context — signal only, no noise.
+5. The full log is always available on disk for both the agent and humans to inspect.
+
 ## Agentic loops
 
 The token table above measures a single run. In an agentic loop the cost compounds — every tool result accumulates in context for the life of the task.
 
-This applies to any loop: fixing a failing test suite, implementing a feature end-to-end, working through a migration, performance tuning execution times. The agent runs a command, reads the result, makes a change, runs it again. Each iteration adds another tool result to the window. With a noisy CLI that means paying for the same verbose boilerplate on every pass, and the agent has to hold all of it to reason about what changed.
+This applies to any loop: fixing a failing test suite, implementing a feature end-to-end, working through a migration, performance tuning execution times. The agent runs a command, reads the result, makes a change, runs it again. Each iteration adds another tool result to the context window. With a noisy CLI that means paying for the same verbose boilerplate every time.
 
-A parser converts each result to a one- or two-line signal. Over 15 iterations, the difference isn't 80 tokens vs 15 tokens — it's 1,200 tokens vs 225, on a single command, for a single task.
+A parser reduces each run to a one- or two-line signal. Over 15 iterations the difference isn't 80 tokens vs 15 tokens — it's 1,200 tokens vs 225 for a single command in a single task.
 
-## Project-local extension
+## Extending with project-local parsers
 
 Built-in parsers cover common tools. For everything else — internal CLIs, custom test runners, proprietary lint tools — add a `.pi/structured-return.json` to your project root.
 
