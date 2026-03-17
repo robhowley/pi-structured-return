@@ -16,8 +16,8 @@ Linters: 1 unused variable warning in a single file.
 | Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
 |---|---|---|---|---|
 | `junit-xml` (go) | 446 | 58 | **87%** | verbose output with full stack trace per failure |
-| `junit-xml` (pytest) | 446 | 71 | **84%** | verbose output with source snippets and summary footer |
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
 | `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |

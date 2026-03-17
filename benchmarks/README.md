@@ -22,7 +22,7 @@ All test runner benchmarks use the same three-test scenario: one passing test, o
 
 ```bash
 # raw
-pytest test-runners/pytest/test_math.py -v
+pytest test-runners/pytest/test_math.py
 
 # structured
 structured_return({ command: "pytest test-runners/pytest/test_math.py --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
