@@ -22,7 +22,7 @@ All test runner benchmarks use the same three-test scenario: one passing test, o
 
 ```bash
 # raw
-pytest test-runners/pytest/test_math.py -v
+pytest test-runners/pytest/test_math.py
 
 # structured
 structured_return({ command: "pytest test-runners/pytest/test_math.py --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
@@ -80,7 +80,7 @@ Run both commands from `test-runners/go/`:
 
 ```bash
 # raw
-go test -v
+go test
 
 # structured
 structured_return({ command: "go test -v 2>&1 | go-junit-report > .tmp/go-report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/go-report.xml"] })

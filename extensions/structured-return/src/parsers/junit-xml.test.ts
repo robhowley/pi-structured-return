@@ -203,6 +203,7 @@ tests/test_math.py:5: AssertionError</failure>
       const result = await parser.parse(makeCtx(xml, "/project"));
       expect(result.failures![0].file).toBe("tests/test_math.py");
       expect(result.failures![0].line).toBe(5);
+      expect(result.failures![0].message).toBe("assert (3 * 4) == 99");
     });
   });
 

@@ -15,9 +15,9 @@ Linters: 1 unused variable warning in a single file.
 
 | Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
 |---|---|---|---|---|
-| `junit-xml` (go) | 446 | 58 | **87%** | verbose output with full stack trace per failure |
-| `junit-xml` (pytest) | 446 | 71 | **84%** | verbose output with source snippets and summary footer |
+| `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
 | `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
@@ -37,7 +37,7 @@ Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than
 
 ## Before / after
 
-**Raw pytest output (446 tokens):** *(pytest does have a JSON mode — but piping raw `--json-report` output to the model is noisier than the default formatter, not cleaner. The parser reads the JSON and extracts only what matters.)*
+**Raw pytest output (262 tokens):**
 ```
 ============================= test session starts ==============================
 platform darwin -- Python 3.14.2, pytest-9.0.2
@@ -69,12 +69,12 @@ FAILED test_math.py::test_does_not_divide_by_zero - ZeroDivisionError: ...
 ========================= 2 failed, 1 passed in 0.01s ==========================
 ```
 
-**Structured result returned to the model (59 tokens):**
+**Structured result returned to the model (56 tokens):**
 ```
-pytest test_math.py --json-report ... → cwd: project
+pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
 2 failed, 1 passed
-  test_math.py  AssertionError: assert (3 * 4) == 99
-  test_math.py  ZeroDivisionError: division by zero
+  test_math.py:5  assert (3 * 4) == 99
+  test_math.py:8  ZeroDivisionError: division by zero
 ```
 
 ## Installation

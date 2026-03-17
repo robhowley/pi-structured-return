@@ -122,7 +122,12 @@ const parser: ParserModule = {
           file,
           line: Number.isNaN(line) ? undefined : line,
           message:
-            bodyLocation?.message ?? panicInfo?.message ?? problem.message ?? problem["#text"]?.trim().split("\n")[0],
+            problem.message && problem.message.toLowerCase() !== "failed"
+              ? problem.message
+              : (bodyLocation?.message ??
+                panicInfo?.message ??
+                problem.message ??
+                problem["#text"]?.trim().split("\n")[0]),
           rule: problem.type,
         });
       }
