@@ -148,6 +148,43 @@ describe("junit-xml parser", () => {
     });
   });
 
+  describe("go-junit-report output", () => {
+    it("extracts panic message and file:line from system-out when failure body is empty", async () => {
+      const xml = `<testsuites tests="2" failures="1">
+        <testsuite name="math-benchmark" tests="2" failures="1" errors="0">
+          <testcase name="TestAddsTwoNumbersCorrectly" classname="math-benchmark" time="0.000"/>
+          <testcase name="TestDoesNotPanic" classname="math-benchmark" time="0.000">
+            <failure message="Failed"></failure>
+          </testcase>
+          <system-out><![CDATA[panic: runtime error: invalid memory address or nil pointer dereference [recovered, repanicked]
+goroutine 23 [running]:
+math-benchmark.TestDoesNotPanic(0x123)
+	/project/math_test.go:22 +0x4
+]]></system-out>
+        </testsuite>
+      </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.failures![0].message).toBe("runtime error: invalid memory address or nil pointer dereference");
+      expect(result.failures![0].file).toBe("math_test.go");
+      expect(result.failures![0].line).toBe(22);
+    });
+
+    it("extracts file, line, and message from Go failure body", async () => {
+      const xml = `<testsuites tests="2" failures="1">
+        <testsuite name="math-benchmark" tests="2" failures="1" errors="0">
+          <testcase name="TestAddsTwoNumbersCorrectly" classname="math-benchmark" time="0.000"/>
+          <testcase name="TestMultipliesTwoNumbersCorrectly" classname="math-benchmark" time="0.000">
+            <failure message="Failed"><![CDATA[    math_test.go:16: expected 99, got 12]]></failure>
+          </testcase>
+        </testsuite>
+      </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.failures![0].file).toBe("math_test.go");
+      expect(result.failures![0].line).toBe(16);
+      expect(result.failures![0].message).toBe("expected 99, got 12");
+    });
+  });
+
   describe("pytest --junitxml output", () => {
     it("extracts file and line from failure body when no file attr present", async () => {
       const xml = `<?xml version="1.0" encoding="utf-8"?>
