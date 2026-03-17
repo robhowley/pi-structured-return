@@ -43,7 +43,7 @@
     "lint": "eslint 'extensions/structured-return/src/**/*.ts'",
     "format:check": "prettier --check 'extensions/structured-return/src/**/*.ts'",
     "format": "prettier --write 'extensions/structured-return/src/**/*.ts'",
-    "prepare": "husky"
+    "prepare": "node -e \"if (process.env.CI || process.env.GITHUB_ACTIONS) process.exit(0)\" || husky"
   },
   "dependencies": {
     "fast-xml-parser": "^5.4.1"
