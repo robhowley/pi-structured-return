@@ -80,7 +80,7 @@ Run both commands from `test-runners/go/`:
 
 ```bash
 # raw
-go test -v
+go test
 
 # structured
 structured_return({ command: "go test -v 2>&1 | go-junit-report > .tmp/go-report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/go-report.xml"] })
