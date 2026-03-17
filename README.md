@@ -76,6 +76,12 @@ pytest test_math.py --json-report ... → cwd: project
   test_math.py  ZeroDivisionError: division by zero
 ```
 
+## Installation
+
+```bash
+pi install npm:@robhowley/pi-structured-return
+```
+
 ## How it works
 
 1. The agent runs commands through `structured_return` instead of `bash`.
