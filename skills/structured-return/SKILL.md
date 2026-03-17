@@ -25,8 +25,7 @@ Prefer better output at the source.
 ## Examples
 
 ### pytest
-- `structured_return({ command: "pytest [any pytest args] --json-report --json-report-file=.tmp/pytest-report.json", parseAs: "pytest-json-report", artifactPaths: [".tmp/pytest-report.json"] })` — append the json-report flags to whatever pytest invocation is needed; scope, filters, markers, etc. go in `[any pytest args]`
-- `structured_return({ command: "pytest -q" })` — fallback when json-report is unavailable
+- `structured_return({ command: "pytest [any pytest args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — `--junitxml` is built into pytest, no extra dependencies needed; scope, filters, markers, etc. go in `[any pytest args]`
 
 ### ruff check
 - `structured_return({ command: "ruff check [any ruff args] --output-format=json", parseAs: "ruff-json" })` — scope, selects, ignores, etc. go in `[any ruff args]`
@@ -49,7 +48,8 @@ Prefer better output at the source.
 ### junit-xml
 JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.
 
-- `structured_return({ command: "[tool] [args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — pytest, nose2, and others that write to a file
+- `structured_return({ command: "[tool] [args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — pytest, nose2, and any other tool that writes to a file via `--junitxml`
+- `structured_return({ command: "go test [any go test args] 2>&1 | go-junit-report > .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — Go requires `go-junit-report` (`go install github.com/jstemmer/go-junit-report/v2@latest`); pipe `go test -v` output through it
 - `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
 - `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — Maven surefire same pattern
 

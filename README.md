@@ -15,10 +15,11 @@ Linters: 1 unused variable warning in a single file.
 
 | Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
 |---|---|---|---|---|
-| `pytest-json-report` | 446 | 59 | **87%** | verbose output with source snippets and summary footer |
+| `junit-xml` (go) | 446 | 58 | **87%** | verbose output with full stack trace per failure |
+| `junit-xml` (pytest) | 446 | 71 | **84%** | verbose output with source snippets and summary footer |
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
-| `junit-xml` | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
+| `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
@@ -26,13 +27,13 @@ Linters: 1 unused variable warning in a single file.
 Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
 
 ## Built-in parsers
-- `pytest-json-report`
-- `ruff-json` (`ruff check` only — `ruff format` has no json support)
-- `eslint-json`
+- `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
 - `vitest-json`
 - `rspec-json`
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
-- `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
+- `ruff-json` (`ruff check` only — `ruff format` has no json support)
+- `eslint-json`
+
 
 ## Before / after
 

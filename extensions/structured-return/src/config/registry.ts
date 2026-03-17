@@ -1,6 +1,5 @@
 import path from "node:path";
 import type { ParserModule, ParserRegistration } from "../types";
-import pytestJsonReport from "../parsers/pytest-json-report";
 import ruffJson from "../parsers/ruff-json";
 import eslintJson from "../parsers/eslint-json";
 import vitestJson from "../parsers/vitest-json";
@@ -10,7 +9,6 @@ import junitXml from "../parsers/junit-xml";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
-  "pytest-json-report": pytestJsonReport,
   "ruff-json": ruffJson,
   "eslint-json": eslintJson,
   "vitest-json": vitestJson,
@@ -34,10 +32,6 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
       (argv.includes("--output-format=json") || argv.includes("--output-format")),
   },
   {
-    parserId: "pytest-json-report",
-    detect: (argv) => argv.includes("pytest") && argv.includes("--json-report"),
-  },
-  {
     parserId: "vitest-json",
     detect: (argv) => argv.includes("vitest") && argv.includes("--reporter=json"),
   },
@@ -53,6 +47,12 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
       argv.some((a) => a.startsWith("--junitxml") || a.startsWith("--junit-xml") || a === "--format=junit"),
   },
 ];
+
+export function listParsers(): { id: string; autoDetect: boolean }[] {
+  const builtInIds = Object.keys(builtIns).filter((id) => id !== "tail-fallback");
+  const autoDetectIds = new Set(AUTO_DETECT.map((d) => d.parserId));
+  return builtInIds.map((id) => ({ id, autoDetect: autoDetectIds.has(id) }));
+}
 
 export async function resolveParser(opts: {
   cwd: string;

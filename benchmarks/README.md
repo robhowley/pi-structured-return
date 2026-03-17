@@ -25,7 +25,7 @@ All test runner benchmarks use the same three-test scenario: one passing test, o
 pytest test-runners/pytest/test_math.py -v
 
 # structured
-structured_return({ command: "pytest test-runners/pytest/test_math.py --json-report --json-report-file=/tmp/pytest-report.json", parseAs: "pytest-json-report", artifactPaths: ["/tmp/pytest-report.json"] })
+structured_return({ command: "pytest test-runners/pytest/test_math.py --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
 ```
 
 ### vitest
@@ -66,6 +66,24 @@ ruby test-runners/minitest/math_test.rb
 
 # structured
 structured_return({ command: "ruby test-runners/minitest/math_test.rb", parseAs: "minitest-text" })
+```
+
+### go / junit-xml
+
+Setup (install `go-junit-report` once):
+
+```bash
+go install github.com/jstemmer/go-junit-report/v2@latest
+```
+
+Run both commands from `test-runners/go/`:
+
+```bash
+# raw
+go test -v
+
+# structured
+structured_return({ command: "go test -v 2>&1 | go-junit-report > .tmp/go-report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/go-report.xml"] })
 ```
 
 ### gradle / junit-xml
