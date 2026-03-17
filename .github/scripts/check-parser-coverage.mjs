@@ -20,9 +20,11 @@ if (!builtInsMatch) {
 
 const parserIds = [...builtInsMatch[1].matchAll(/"([\w-]+)"\s*:/g)].map((m) => m[1]);
 
-const missing = parserIds.filter(
-  (id) => !INTERNAL_PARSERS.has(id) && !readme.includes(`| \`${id}\` |`) && !readme.includes(`| ${id} |`)
-);
+const missing = parserIds.filter((id) => {
+  if (INTERNAL_PARSERS.has(id)) return false;
+  // Match exact column or qualified variant e.g. `junit-xml` (go)
+  return !readme.includes(`| \`${id}\` `) && !readme.includes(`| ${id} `);
+});
 
 if (missing.length > 0) {
   console.error("The following parsers are missing from the README token reduction table:");

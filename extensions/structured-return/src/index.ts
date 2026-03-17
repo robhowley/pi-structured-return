@@ -7,9 +7,7 @@ import { Text } from "@mariozechner/pi-tui";
 import type { ObservedRunArgs, ParsedResult, RunContext } from "./types";
 import { ensureRunDir, writeRunArtifacts } from "./storage/log-store";
 import { loadProjectConfig } from "./config/project-config";
-import { resolveParser } from "./config/registry";
-
-const BUILT_IN_PARSER_IDS = ["pytest-json-report", "ruff-json", "eslint-json", "vitest-json", "tail-fallback"];
+import { resolveParser, listParsers } from "./config/registry";
 
 export default function structuredReturn(pi: ExtensionAPI) {
   pi.registerCommand("sr-parsers", {
@@ -18,8 +16,8 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const lines: string[] = ["structured-return parsers", ""];
 
       lines.push("built-in:");
-      for (const id of BUILT_IN_PARSER_IDS) {
-        lines.push(`  ${id}`);
+      for (const { id, autoDetect } of listParsers()) {
+        lines.push(`  ${id}${autoDetect ? "  (auto-detect)" : ""}`);
       }
 
       const projectRegistrations = loadProjectConfig(ctx.cwd);
