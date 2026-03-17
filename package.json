@@ -1,6 +1,6 @@
 {
   "name": "@robhowley/pi-structured-return",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Structured command execution for Pi agents: compact results for the model, full logs for humans.",
   "license": "MIT",
   "repository": {
