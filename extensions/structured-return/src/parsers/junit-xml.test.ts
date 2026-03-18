@@ -267,6 +267,39 @@ tests/test_math.py:5: AssertionError</failure>
     });
   });
 
+  describe("jest-junit output", () => {
+    it("extracts file, line, and message from plain-text failure elements", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <testsuites name="jest tests" tests="3" failures="2" errors="0">
+          <testsuite name="basic math" errors="0" failures="2" skipped="0" tests="3">
+            <testcase classname="basic math adds two numbers correctly" name="basic math adds two numbers correctly" time="0"/>
+            <testcase classname="basic math multiplies two numbers correctly" name="basic math multiplies two numbers correctly" time="0.001">
+              <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 99
+Received: 12
+    at Object.toBe (/project/math.test.js:7:19)
+    at Promise.then.completed (/project/node_modules/jest-circus/build/utils.js:298:28)</failure>
+            </testcase>
+            <testcase classname="basic math does not divide by zero" name="basic math does not divide by zero" time="0">
+              <failure>TypeError: Cannot read properties of null (reading 'value')
+    at Object.value (/project/math.test.js:11:25)
+    at Promise.then.completed (/project/node_modules/jest-circus/build/utils.js:298:28)</failure>
+            </testcase>
+          </testsuite>
+        </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 1 passed");
+      expect(result.failures![0].file).toBe("math.test.js");
+      expect(result.failures![0].line).toBe(7);
+      expect(result.failures![0].message).toBe("Error: expect(received).toBe(expected) // Object.is equality");
+      expect(result.failures![1].file).toBe("math.test.js");
+      expect(result.failures![1].line).toBe(11);
+      expect(result.failures![1].message).toBe("TypeError: Cannot read properties of null (reading 'value')");
+    });
+  });
+
   describe("multi-suite totals", () => {
     it("failures and errors summed across suites", async () => {
       const xml = `<testsuites>

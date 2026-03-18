@@ -74,6 +74,14 @@ function parseBodyLocation(
     if (m) return { file: path.basename(m[1]), line: Number(m[2]) };
   }
 
+  // Jest/Node-style: "    at Something (file.js:line:col)" — skip node_modules frames
+  for (const line of lines) {
+    const m = line.match(/^at\s+\S+\s+\(([^)]+\.(?:[jt]sx?|mjs|cjs)):(\d+):\d+\)/);
+    if (m && !m[1].includes("node_modules")) {
+      return { file: path.basename(m[1]), line: Number(m[2]) };
+    }
+  }
+
   // Java/JVM: "at [module/]pkg.Class.method(File.java:N)"
   const javaRe = /^at (?:[\w.$]+\/)?([\w.$]+)\.\w+\(([\w]+\.(?:java|kt|scala|groovy)):(\d+)\)$/;
   const frameworkPrefixes = ["java.", "javax.", "sun.", "com.sun.", "org.junit.", "org.opentest4j.", "junit."];
@@ -144,8 +152,9 @@ const parser: ParserModule = {
       totalFailed += Number(suite.failures ?? 0) + Number(suite.errors ?? 0);
 
       for (const tc of suite.testcase ?? []) {
-        const problem = tc.failure ?? tc.error;
-        if (!problem) continue;
+        const rawProblem = tc.failure ?? tc.error;
+        if (!rawProblem) continue;
+        const problem: JUnitFailureOrError = typeof rawProblem === "string" ? { "#text": rawProblem } : rawProblem;
 
         const bodyLocation = problem["#text"] ? parseBodyLocation(problem["#text"], tc.classname) : undefined;
         const panicInfo =
