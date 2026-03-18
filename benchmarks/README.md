@@ -104,6 +104,24 @@ gradle test
 structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-MathTest.xml"] })
 ```
 
+### dotnet / junit-xml
+
+Setup (run once from `test-runners/dotnet/` to restore packages):
+
+```bash
+cd test-runners/dotnet && dotnet restore
+```
+
+Requires `JunitXml.TestLogger` — already added to the project. Run both commands from `test-runners/dotnet/`:
+
+```bash
+# raw
+dotnet test
+
+# structured
+structured_return({ command: "dotnet test --logger \"junit;LogFilePath=.tmp/report.xml\"", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
+```
+
 ### maven / junit-xml
 
 Setup (run once from `test-runners/maven/` to pull dependencies):

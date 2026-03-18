@@ -53,6 +53,12 @@ JUnit XML is the de facto standard output format across the JVM ecosystem and ma
 - `structured_return({ command: "go test [any go test args] 2>&1 | go-junit-report > .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — Go requires `go-junit-report` (`go install github.com/jstemmer/go-junit-report/v2@latest`); pipe `go test -v` output through it
 - `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
 
+#### .NET / xUnit
+
+`dotnet test` requires the `JunitXml.TestLogger` package (`dotnet add package JunitXml.TestLogger`). Pass the logger inline — no config file changes needed. Add a namespace to your test class or the logger will fall back to `UnknownNamespace.UnknownType` for classnames.
+
+- `structured_return({ command: "dotnet test --logger \"junit;LogFilePath=.tmp/report.xml\"", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — any dotnet test args (project path, `--filter`, etc.) go before `--logger`
+
 #### Maven
 
 `mvn test` writes one XML per test class via surefire — no extra configuration needed.

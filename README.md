@@ -17,6 +17,7 @@ Linters: 1 unused variable warning in a single file.
 |---|---|---|---|---|
 | `junit-xml` (maven) | 1056 | 74 | **93%** | build lifecycle noise with surefire stack traces per failure |
 | `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
+| `junit-xml` (dotnet) | 488 | 100 | **80%** | build header and VSTest output with per-failure stack traces |
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
 | `junit-xml` (jest) | 303 | 67 | **78%** | source annotations with deep jest-circus stack traces per failure |
 | `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
