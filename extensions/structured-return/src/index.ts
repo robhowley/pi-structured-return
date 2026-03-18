@@ -108,7 +108,9 @@ export function formatResult(result: ParsedResult): string {
   for (const f of result.failures ?? []) {
     const location = [f.file, f.line].filter(Boolean).join(":");
     const rule = f.rule ? `  [${f.rule}]` : "";
-    lines.push(`  ${location}  ${f.message ?? ""}${rule}`);
+    const msgLines = (f.message ?? "").split("\n");
+    lines.push(`  ${location}  ${msgLines[0]}${rule}`);
+    for (const extra of msgLines.slice(1)) lines.push(`    ${extra}`);
   }
   return lines.join("\n");
 }

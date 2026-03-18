@@ -9,3 +9,10 @@ __pycache__
 # Gradle
 benchmarks/test-runners/java/.gradle/
 benchmarks/test-runners/java/build/
+
+# Maven
+benchmarks/test-runners/maven/target/
+
+# .NET
+benchmarks/test-runners/dotnet/bin/
+benchmarks/test-runners/dotnet/obj/

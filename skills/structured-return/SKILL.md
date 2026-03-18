@@ -46,12 +46,30 @@ Prefer better output at the source.
 - `structured_return({ command: "ruby [any minitest args]", parseAs: "minitest-text" })` — no format flags needed; works with plain ruby invocation
 
 ### junit-xml
+
 JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.
 
 - `structured_return({ command: "[tool] [args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — pytest, nose2, and any other tool that writes to a file via `--junitxml`
 - `structured_return({ command: "go test [any go test args] 2>&1 | go-junit-report > .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — Go requires `go-junit-report` (`go install github.com/jstemmer/go-junit-report/v2@latest`); pipe `go test -v` output through it
 - `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
-- `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — Maven surefire same pattern
+
+#### .NET / xUnit
+
+`dotnet test` requires the `JunitXml.TestLogger` package (`dotnet add package JunitXml.TestLogger`). Pass the logger inline — no config file changes needed. Add a namespace to your test class or the logger will fall back to `UnknownNamespace.UnknownType` for classnames.
+
+- `structured_return({ command: "dotnet test --logger \"junit;LogFilePath=.tmp/report.xml\"", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — any dotnet test args (project path, `--filter`, etc.) go before `--logger`
+
+#### Maven
+
+`mvn test` writes one XML per test class via surefire — no extra configuration needed.
+
+- `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — surefire writes one XML per class; glob covers all of them; any maven args (e.g. `-pl module`, `-Dtest=ClassName`) go before `test`
+
+#### Jest
+
+Jest requires the `jest-junit` reporter (`npm install --save-dev jest-junit`). Pass it via `--reporters` on the CLI — no permanent config change needed.
+
+- `structured_return({ command: "jest [any jest args] --reporters=jest-junit", parseAs: "junit-xml", artifactPaths: [".tmp/junit.xml"] })` — set `JEST_JUNIT_OUTPUT_FILE=.tmp/junit.xml` or configure `outputFile` in `jest-junit` config; file paths, `--testPathPattern`, etc. go in `[any jest args]`
 
 #### Swift / XCTest (Swift Package Manager)
 
