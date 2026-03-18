@@ -21,8 +21,8 @@ Linters: 1 unused variable warning in a single file.
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
 | `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
-| `junit-xml` (jest) | 311 | 87 | **72%** | source annotations with deep jest-circus stack traces per failure |
 | `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
+| `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |

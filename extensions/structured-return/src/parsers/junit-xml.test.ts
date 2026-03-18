@@ -293,7 +293,9 @@ Received: 12
       expect(result.summary).toBe("2 failed, 1 passed");
       expect(result.failures![0].file).toBe("math.test.js");
       expect(result.failures![0].line).toBe(7);
-      expect(result.failures![0].message).toBe("Error: expect(received).toBe(expected) // Object.is equality");
+      expect(result.failures![0].message).toBe(
+        "Error: expect(received).toBe(expected) // Object.is equality\nExpected: 99\nReceived: 12"
+      );
       expect(result.failures![1].file).toBe("math.test.js");
       expect(result.failures![1].line).toBe(11);
       expect(result.failures![1].message).toBe("TypeError: Cannot read properties of null (reading 'value')");

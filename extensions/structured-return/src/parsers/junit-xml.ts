@@ -46,6 +46,16 @@ function decodeXmlEntities(s: string): string {
     .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)));
 }
 
+/** Extract Expected/Received/Actual diff lines from a failure body, e.g. Jest assertion output. */
+function extractAssertionDiff(text: string): string | undefined {
+  const diffLines: string[] = [];
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim();
+    if (/^(Expected|Received|Actual)\s*:/.test(trimmed)) diffLines.push(trimmed);
+  }
+  return diffLines.length > 0 ? diffLines.join("\n") : undefined;
+}
+
 /** Extract file, line, and message from failure body text.
  *  Handles:
  *  - pytest-style: "file.py:line: message"
@@ -178,7 +188,20 @@ const parser: ParserModule = {
                   panicInfo?.message ??
                   problem.message ??
                   problem["#text"]?.trim().split("\n")[0]);
-            return raw ? decodeXmlEntities(raw) : undefined;
+            if (!raw) return undefined;
+            const decoded = decodeXmlEntities(raw);
+            // Append assertion diff lines (Expected/Received/Actual) from the body when not already present.
+            // Covers Jest-style failures where the diff follows the error type line in #text.
+            if (
+              problem["#text"] &&
+              !decoded.includes("Expected") &&
+              !decoded.includes("Received") &&
+              !decoded.includes("Actual")
+            ) {
+              const diff = extractAssertionDiff(problem["#text"]);
+              if (diff) return `${decoded}\n${diff}`;
+            }
+            return decoded;
           })(),
           rule: problem.type,
         });
