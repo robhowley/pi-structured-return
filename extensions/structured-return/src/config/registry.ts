@@ -6,6 +6,8 @@ import vitestJson from "../parsers/vitest-json";
 import rspecJson from "../parsers/rspec-json";
 import minitestText from "../parsers/minitest-text";
 import junitXml from "../parsers/junit-xml";
+import cargoBuild from "../parsers/cargo-build";
+import cargoTest from "../parsers/cargo-test";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -15,6 +17,8 @@ const builtIns: Record<string, ParserModule> = {
   "rspec-json": rspecJson,
   "minitest-text": minitestText,
   "junit-xml": junitXml,
+  "cargo-build": cargoBuild,
+  "cargo-test": cargoTest,
   "tail-fallback": tailFallback,
 };
 
@@ -45,6 +49,17 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
     parserId: "junit-xml",
     detect: (argv) =>
       argv.some((a) => a.startsWith("--junitxml") || a.startsWith("--junit-xml") || a === "--format=junit"),
+  },
+  {
+    parserId: "cargo-build",
+    detect: (argv) =>
+      argv.includes("cargo") &&
+      argv.includes("build") &&
+      argv.some((a) => a.startsWith("--message-format=json") || a === "json"),
+  },
+  {
+    parserId: "cargo-test",
+    detect: (argv) => argv.includes("cargo") && argv.includes("test"),
   },
 ];
 

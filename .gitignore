@@ -16,3 +16,7 @@ benchmarks/test-runners/maven/target/
 # .NET
 benchmarks/test-runners/dotnet/bin/
 benchmarks/test-runners/dotnet/obj/
+
+# Rust / Cargo
+benchmarks/test-runners/cargo/target/
+benchmarks/test-runners/cargo-build/target/
