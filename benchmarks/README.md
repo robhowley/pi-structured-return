@@ -104,6 +104,24 @@ gradle test
 structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-MathTest.xml"] })
 ```
 
+### jest / junit-xml
+
+Setup (run once from `test-runners/jest/`):
+
+```bash
+cd test-runners/jest && npm install
+```
+
+Run both commands from `test-runners/jest/`:
+
+```bash
+# raw
+npx jest
+
+# structured
+structured_return({ command: "JEST_JUNIT_OUTPUT_FILE=.tmp/junit.xml npx jest --reporters=jest-junit", parseAs: "junit-xml", artifactPaths: [".tmp/junit.xml"] })
+```
+
 ## Linters
 
 Both linter benchmarks use a single file with one unused variable — a conservative lower bound. Reduction grows as violations spread across more files.

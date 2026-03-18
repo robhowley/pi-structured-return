@@ -53,6 +53,12 @@ JUnit XML is the de facto standard output format across the JVM ecosystem and ma
 - `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
 - `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — Maven surefire same pattern
 
+#### Jest
+
+Jest requires the `jest-junit` reporter (`npm install --save-dev jest-junit`). Pass it via `--reporters` on the CLI — no permanent config change needed.
+
+- `structured_return({ command: "jest [any jest args] --reporters=jest-junit", parseAs: "junit-xml", artifactPaths: [".tmp/junit.xml"] })` — set `JEST_JUNIT_OUTPUT_FILE=.tmp/junit.xml` or configure `outputFile` in `jest-junit` config; file paths, `--testPathPattern`, etc. go in `[any jest args]`
+
 #### Swift / XCTest (Swift Package Manager)
 
 `swift test` has native JUnit XML output via `--xunit-output` (Swift 5.7+). Use this for all SPM projects — no third-party reporter needed.
