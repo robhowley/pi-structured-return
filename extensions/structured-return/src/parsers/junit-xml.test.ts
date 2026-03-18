@@ -185,6 +185,66 @@ math-benchmark.TestDoesNotPanic(0x123)
     });
   });
 
+  describe("maven / java stack trace output", () => {
+    it("extracts file and line from first frame matching classname", async () => {
+      const xml = `<testsuite name="MathTest" tests="1" failures="0" errors="1">
+        <testcase name="multipliesTwoNumbersCorrectly" classname="MathTest" time="0.001">
+          <error message="expected: &lt;99&gt; but was: &lt;12&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <99> but was: <12>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at MathTest.multipliesTwoNumbersCorrectly(MathTest.java:13)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+]]></error>
+        </testcase>
+      </testsuite>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.failures![0].file).toBe("MathTest.java");
+      expect(result.failures![0].line).toBe(13);
+    });
+
+    it("falls back to first non-framework frame when classname has no match", async () => {
+      const xml = `<testsuite name="suite" tests="1" failures="0" errors="1">
+        <testcase name="doesNotDivideByZero" classname="MathTest" time="0.001">
+          <error message="/ by zero" type="java.lang.ArithmeticException"><![CDATA[java.lang.ArithmeticException: / by zero
+	at MathTest.doesNotDivideByZero(MathTest.java:18)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+]]></error>
+        </testcase>
+      </testsuite>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.failures![0].file).toBe("MathTest.java");
+      expect(result.failures![0].line).toBe(18);
+    });
+  });
+
+  describe("dotnet / xunit output", () => {
+    it("extracts file and line from .NET stack trace body", async () => {
+      const xml = `<testsuites>
+        <testsuite name="dotnet.dll" tests="1" failures="1" errors="0">
+          <testcase classname="Benchmark.MathTest" name="DoesNotThrowOnNullAccess" time="0.001">
+            <failure type="failure" message="System.NullReferenceException : Object reference not set to an instance of an object.">at Benchmark.MathTest.DoesNotThrowOnNullAccess() in /project/MathTest.cs:line 21
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)</failure>
+          </testcase>
+        </testsuite>
+      </testsuites>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.failures![0].file).toBe("MathTest.cs");
+      expect(result.failures![0].line).toBe(21);
+    });
+
+    it("decodes &#xA; entities in message attribute", async () => {
+      const xml = `<testsuites>
+        <testsuite name="dotnet.dll" tests="1" failures="1" errors="0">
+          <testcase classname="Benchmark.MathTest" name="MultipliesTwoNumbersCorrectly" time="0.001">
+            <failure type="failure" message="Assert.Equal() Failure: Values differ&#xA;Expected: 99&#xA;Actual:   12">at Benchmark.MathTest.MultipliesTwoNumbersCorrectly() in /project/MathTest.cs:line 14</failure>
+          </testcase>
+        </testsuite>
+      </testsuites>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.failures![0].message).toBe("Assert.Equal() Failure: Values differ\nExpected: 99\nActual:   12");
+    });
+  });
+
   describe("pytest --junitxml output", () => {
     it("extracts file and line from failure body when no file attr present", async () => {
       const xml = `<?xml version="1.0" encoding="utf-8"?>
