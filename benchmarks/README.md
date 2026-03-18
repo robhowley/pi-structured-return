@@ -104,6 +104,24 @@ gradle test
 structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-MathTest.xml"] })
 ```
 
+### maven / junit-xml
+
+Setup (run once from `test-runners/maven/` to pull dependencies):
+
+```bash
+cd test-runners/maven && mvn test
+```
+
+Run both commands from `test-runners/maven/`:
+
+```bash
+# raw
+mvn test
+
+# structured
+structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-MathTest.xml"] })
+```
+
 ### jest / junit-xml
 
 Setup (run once from `test-runners/jest/`):
