@@ -45,6 +45,13 @@ Prefer better output at the source.
 ### minitest
 - `structured_return({ command: "ruby [any minitest args]", parseAs: "minitest-text" })` — no format flags needed; works with plain ruby invocation
 
+### cargo build
+- `structured_return({ command: "cargo build --message-format=json", parseAs: "cargo-build" })` — `--message-format=json` is built into cargo; errors include file, line, error code (E0308 etc.), and primary span label (expected X, found Y); warnings are filtered out
+
+### cargo test
+- `structured_return({ command: "cargo test", parseAs: "cargo-test" })` — no extra flags needed; assertion failures surface left/right values and file:line; panics surface the message and file:line; if compilation fails, the summary says so and tells the model to run `cargo build --message-format=json` for structured errors
+- `structured_return({ command: "cargo test [filter]", parseAs: "cargo-test" })` — filter by test name substring, module path, or `--test integration_test_name`
+
 ### junit-xml
 
 JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.

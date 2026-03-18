@@ -158,6 +158,28 @@ npx jest
 structured_return({ command: "JEST_JUNIT_OUTPUT_FILE=.tmp/junit.xml npx jest --reporters=jest-junit", parseAs: "junit-xml", artifactPaths: [".tmp/junit.xml"] })
 ```
 
+### cargo test
+
+```bash
+# raw
+cargo test
+
+# structured
+structured_return({ command: "cargo test", parseAs: "cargo-test" })
+```
+
+### cargo build
+
+```bash
+# raw
+cargo build
+
+# structured
+structured_return({ command: "cargo build --message-format=json", parseAs: "cargo-build" })
+```
+
+Run both commands from `test-runners/cargo/` (cargo test) and `test-runners/cargo-build/` (cargo build).
+
 ## Linters
 
 Both linter benchmarks use a single file with one unused variable — a conservative lower bound. Reduction grows as violations spread across more files.

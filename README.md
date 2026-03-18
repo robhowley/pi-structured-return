@@ -21,8 +21,10 @@ Linters: 1 unused variable warning in a single file.
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
 | `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
+| `cargo-test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
 | `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
+| `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
@@ -34,6 +36,8 @@ Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than
 - `vitest-json`
 - `rspec-json`
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
+- `cargo-build` (`cargo build --message-format=json` — errors with file, line, error code, and primary span label; warnings filtered out)
+- `cargo-test` (`cargo test` — assertion left/right values, panic messages, and file:line per failure; detects compilation failures and directs to `cargo build --message-format=json`)
 - `ruff-json` (`ruff check` only — `ruff format` has no json support)
 - `eslint-json`
 
