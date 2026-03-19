@@ -1,6 +1,6 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { ParserModule, ParsedFailure } from "../types";
+import { safeReadFile } from "./utils";
 
 interface CargoSpan {
   file_name: string;
@@ -29,7 +29,7 @@ const parser: ParserModule = {
   id: "cargo-build",
   async parse(ctx) {
     // --message-format=json writes NDJSON to stdout; one JSON object per line
-    const stdout = fs.readFileSync(ctx.stdoutPath, "utf8");
+    const stdout = safeReadFile(ctx.stdoutPath);
     const failures: ParsedFailure[] = [];
 
     for (const line of stdout.split("\n")) {

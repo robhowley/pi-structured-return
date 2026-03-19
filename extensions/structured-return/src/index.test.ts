@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, it, expect } from "vitest";
 import { stripCdPrefix, formatResult, finalizeResult } from "./index";
 
@@ -94,5 +97,56 @@ describe("finalizeResult", () => {
       "/project"
     );
     expect(result.cwd).toBe("/project");
+  });
+
+  it("appends rawTail when parser reports failures but extracts no details", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "finalize-test-"));
+    const logPath = path.join(dir, "combined.log");
+    fs.writeFileSync(logPath, "line1\nline2\nFAIL: something broke\n");
+    const result = finalizeResult(
+      { tool: "ava", status: "fail", summary: "2 failed, 1 passed", failures: [] },
+      1,
+      logPath,
+      "/project"
+    );
+    expect(result.rawTail).toContain("FAIL: something broke");
+  });
+
+  it("does not overwrite rawTail when parser already set it", () => {
+    const result = finalizeResult(
+      { tool: "dbt", status: "fail", summary: "1 error", failures: [], rawTail: "SELECT * FROM ..." },
+      1,
+      "/nonexistent/log",
+      "/project"
+    );
+    expect(result.rawTail).toBe("SELECT * FROM ...");
+  });
+});
+
+describe("formatResult safety net", () => {
+  it("surfaces log path and rawTail when failures detected but no details parsed", () => {
+    const result = formatResult({
+      tool: "ava",
+      exitCode: 1,
+      status: "fail",
+      summary: "2 failed, 1 passed",
+      failures: [],
+      logPath: "/tmp/ava-run.log",
+      rawTail: "FAIL: test_multiply\nexpected 99, got 12",
+    });
+    expect(result).toContain("log: /tmp/ava-run.log");
+    expect(result).toContain("expected 99, got 12");
+  });
+
+  it("does not surface log path when failures have details", () => {
+    const result = formatResult({
+      tool: "ava",
+      exitCode: 1,
+      status: "fail",
+      summary: "1 failed",
+      failures: [{ id: "test1", file: "test.js", line: 5, message: "boom" }],
+      logPath: "/tmp/ava-run.log",
+    });
+    expect(result).not.toContain("log:");
   });
 });

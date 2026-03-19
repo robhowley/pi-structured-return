@@ -1,10 +1,10 @@
-import fs from "node:fs";
 import type { ParserModule } from "../types";
+import { safeReadFile } from "./utils";
 
 const parser: ParserModule = {
   id: "tail-fallback",
   async parse(ctx) {
-    const log = fs.readFileSync(ctx.logPath, "utf8");
+    const log = safeReadFile(ctx.logPath);
     const lines = log.split(/\r?\n/);
     const tail = lines.slice(-200).join("\n");
     return {

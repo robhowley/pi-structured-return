@@ -1,6 +1,6 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { ParserModule } from "../types";
+import { safeReadFile } from "./utils";
 
 interface RSpecException {
   class: string;
@@ -40,7 +40,7 @@ function firstParagraph(message: string): string {
 const parser: ParserModule = {
   id: "rspec-json",
   async parse(ctx) {
-    const stdout = fs.readFileSync(ctx.stdoutPath, "utf8").trim();
+    const stdout = safeReadFile(ctx.stdoutPath).trim();
     const report = stdout ? (JSON.parse(stdout) as RSpecReport) : null;
     if (!report) {
       return {

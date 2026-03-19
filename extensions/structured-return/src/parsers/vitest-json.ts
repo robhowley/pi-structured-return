@@ -1,6 +1,6 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { ParserModule } from "../types";
+import { safeReadFile } from "./utils";
 
 interface VitestAssertionResult {
   fullName: string;
@@ -23,7 +23,7 @@ interface VitestReport {
 const parser: ParserModule = {
   id: "vitest-json",
   async parse(ctx) {
-    const stdout = fs.readFileSync(ctx.stdoutPath, "utf8").trim();
+    const stdout = safeReadFile(ctx.stdoutPath).trim();
     const report = stdout ? (JSON.parse(stdout) as VitestReport) : null;
     if (!report) {
       return {

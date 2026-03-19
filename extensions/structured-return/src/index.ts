@@ -8,6 +8,7 @@ import type { ObservedRunArgs, ParsedResult, RunContext } from "./types";
 import { ensureRunDir, writeRunArtifacts } from "./storage/log-store";
 import { loadProjectConfig } from "./config/project-config";
 import { resolveParser, listParsers } from "./config/registry";
+import { safeReadFile } from "./parsers/utils";
 
 export default function structuredReturn(pi: ExtensionAPI) {
   pi.registerCommand("sr-parsers", {
@@ -41,19 +42,14 @@ export default function structuredReturn(pi: ExtensionAPI) {
     },
   });
 
-  pi.on("before_agent_start", async (event) => {
-    return {
-      systemPrompt:
-        event.systemPrompt +
-        "\n\nWhen running lint, test, build, or other shell commands, load and follow the `structured-return` skill before choosing how to invoke them.",
-    };
-  });
-
   pi.registerTool({
     name: "structured_return",
     label: "Structured Return",
     description:
       "Run a command, store full logs, apply an explicit or registered parser when available, and fall back to tail + log path.",
+    promptGuidelines: [
+      "Prefer structured_return over bash for test suites, linters, type checkers, and build commands - it returns compact results. Check the structured-return skill for the right flags and parseAs value for each tool.",
+    ],
     parameters: Type.Object({
       command: Type.String(),
       cwd: Type.Optional(Type.String()),
@@ -112,6 +108,12 @@ export function formatResult(result: ParsedResult): string {
     lines.push(`  ${location}  ${msgLines[0]}${rule}`);
     for (const extra of msgLines.slice(1)) lines.push(`    ${extra}`);
   }
+  // If the parser detected failures but couldn't extract details, surface the
+  // log path and raw tail so the model has a path forward instead of a dead end.
+  if (result.status === "fail" && (result.failures ?? []).length === 0) {
+    if (result.logPath) lines.push(`log: ${result.logPath}`);
+    if (result.rawTail) lines.push(result.rawTail);
+  }
   return lines.join("\n");
 }
 
@@ -157,5 +159,14 @@ export function finalizeResult(
       logPath,
     };
   }
-  return { ...result, exitCode, cwd, logPath };
+  const finalized: ParsedResult = { ...result, exitCode, cwd, logPath };
+  // Safety net: if the parser reports failures but couldn't extract any details
+  // (e.g., tool output format changed), append the log tail so the model isn't
+  // left with "2 failed" and nothing actionable.
+  if (finalized.status === "fail" && (finalized.failures ?? []).length === 0 && !finalized.rawTail) {
+    const log = safeReadFile(logPath);
+    const lines = log.split(/\r?\n/);
+    finalized.rawTail = lines.slice(-200).join("\n");
+  }
+  return finalized;
 }

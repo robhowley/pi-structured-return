@@ -33,6 +33,45 @@ Prefer better output at the source.
 ### ruff format
 - `ruff format --check .` (no structured_return — json output not supported)
 
+### mypy
+- `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
+
+### tsc
+- `structured_return({ command: "tsc --noEmit --pretty false [any tsc args]", parseAs: "tsc-text" })` — `--pretty false` suppresses source snippets and ANSI codes; parser extracts file, line, TS error code, and message from the compact `file(line,col): error TSXXXX: message` format
+
+### pylint
+- `structured_return({ command: "pylint [any pylint args] --output-format=json", parseAs: "pylint-json" })` — `--output-format=json` is built into pylint; rule includes both message-id and symbol name (e.g. `W0612(unused-variable)`)
+
+### shellcheck
+- `structured_return({ command: "shellcheck [any shellcheck args] --format=json", parseAs: "shellcheck-json" })` — `--format=json` is built into shellcheck; strips source snippets, caret indicators, "Did you mean" suggestions, and wiki URLs
+
+### rubocop
+- `structured_return({ command: "rubocop [any rubocop args] --format json", parseAs: "rubocop-json" })` — `--format json` is built into rubocop; cop name prefix stripped from messages; source snippets and caret indicators removed
+
+### flake8
+- `flake8 [any flake8 args]` (no structured_return — default output is already compact `file:line:col: CODE message`; no JSON without a plugin; use `bash` directly)
+
+### swiftc
+- `structured_return({ command: "swiftc -typecheck [any swiftc args]", parseAs: "swiftc-text" })` — parses `file:line:col: error: message` from stderr; source annotations and duplicate error lines deduplicated; warnings filtered out
+
+### hadolint
+- `structured_return({ command: "hadolint [any hadolint args] --format json", parseAs: "hadolint-json" })` — `--format json` is built into hadolint; strips ANSI color codes and level labels from text output
+
+### stylelint
+- `structured_return({ command: "stylelint [any stylelint args] --formatter json", parseAs: "stylelint-json" })` — `--formatter json` is built into stylelint; rule name suffix stripped from message text; requires a `.stylelintrc` config
+
+### ava
+- `structured_return({ command: "npx ava [any ava args] --no-color", parseAs: "ava-text" })` — parses default text output from stderr; assertion failures extract expected/actual from diff lines and file:line; runtime errors extract message and file:line from stack trace
+
+### mocha
+- `structured_return({ command: "mocha [any mocha args] --reporter json", parseAs: "mocha-json" })` — `--reporter json` is built into mocha; assertion failures surface explicit expected/actual values; runtime errors surface message and file:line from stack trace
+
+### Python unittest
+- `structured_return({ command: "python3 -m unittest [any unittest args]", parseAs: "unittest-text" })` — no special flags needed; parses the default verbose traceback output from stderr; assertion messages extracted from `AssertionError` lines; file:line from traceback frames
+
+### go test
+- `structured_return({ command: "go test -json [any go test args]", parseAs: "go-test-json" })` — `-json` is built into `go test`; NDJSON output; assertion failures extract file:line and message from `t.Error`/`t.Errorf` output; panics extract message and user-code file:line from stack trace; 97% reduction vs raw NDJSON
+
 ### vitest
 - `structured_return({ command: "vitest run [any vitest args] --reporter=json", parseAs: "vitest-json" })` — file paths, filters, etc. go in `[any vitest args]`
 

@@ -1,11 +1,11 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { ParserModule } from "../types";
+import { safeReadFile } from "./utils";
 
 const parser: ParserModule = {
   id: "eslint-json",
   async parse(ctx) {
-    const stdout = fs.readFileSync(ctx.stdoutPath, "utf8").trim();
+    const stdout = safeReadFile(ctx.stdoutPath).trim();
     const files = stdout ? JSON.parse(stdout) : [];
     const failures = [] as Array<{ id: string; file?: string; line?: number; message?: string; rule?: string }>;
     for (const file of Array.isArray(files) ? files : []) {

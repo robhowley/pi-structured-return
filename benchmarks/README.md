@@ -180,9 +180,67 @@ structured_return({ command: "cargo build --message-format=json", parseAs: "carg
 
 Run both commands from `test-runners/cargo/` (cargo test) and `test-runners/cargo-build/` (cargo build).
 
+### go test (native JSON)
+
+No extra dependencies — uses Go's built-in `-json` flag. Run from `test-runners/go-json/`:
+
+```bash
+# raw
+go test -json ./...
+
+# structured
+structured_return({ command: "go test -json ./...", parseAs: "go-test-json" })
+```
+
+### mocha
+
+Setup (run once from `test-runners/mocha/`):
+
+```bash
+cd test-runners/mocha && npm install
+```
+
+Run both commands from `test-runners/mocha/`:
+
+```bash
+# raw
+npx mocha test_math.js
+
+# structured
+structured_return({ command: "npx mocha test_math.js --reporter json", parseAs: "mocha-json" })
+```
+
+### ava
+
+Setup (run once from `test-runners/ava/`):
+
+```bash
+cd test-runners/ava && npm install
+```
+
+Run both commands from `test-runners/ava/`:
+
+```bash
+# raw
+npx ava test_math.js
+
+# structured
+structured_return({ command: "npx ava test_math.js --no-color", parseAs: "ava-text" })
+```
+
+### unittest
+
+```bash
+# raw
+python3 -m unittest test-runners/unittest/test_math.py
+
+# structured
+structured_return({ command: "python3 -m unittest test-runners/unittest/test_math.py", parseAs: "unittest-text" })
+```
+
 ## Linters
 
-Both linter benchmarks use a single file with one unused variable — a conservative lower bound. Reduction grows as violations spread across more files.
+Linter benchmarks use a single file with one or two violations — a conservative lower bound. Reduction grows as violations spread across more files.
 
 ### ruff
 
@@ -202,6 +260,98 @@ npx eslint --config linters/eslint.config.mjs linters/lint_check.ts
 
 # structured
 structured_return({ command: "npx eslint --config linters/eslint.config.mjs linters/lint_check.ts -f json", parseAs: "eslint-json" })
+```
+
+### mypy
+
+```bash
+# raw
+mypy linters/mypy/type_check.py
+
+# structured
+structured_return({ command: "mypy --output json linters/mypy/type_check.py", parseAs: "mypy-json" })
+```
+
+### tsc
+
+```bash
+# raw
+tsc --noEmit linters/tsc/type_check.ts
+
+# structured
+structured_return({ command: "tsc --noEmit --pretty false linters/tsc/type_check.ts", parseAs: "tsc-text" })
+```
+
+### pylint
+
+```bash
+# raw
+pylint linters/pylint/lint_check.py
+
+# structured
+structured_return({ command: "pylint --output-format=json linters/pylint/lint_check.py", parseAs: "pylint-json" })
+```
+
+### shellcheck
+
+```bash
+# raw
+shellcheck linters/shellcheck/lint_check.sh
+
+# structured
+structured_return({ command: "shellcheck --format=json linters/shellcheck/lint_check.sh", parseAs: "shellcheck-json" })
+```
+
+### rubocop
+
+Setup (install once):
+
+```bash
+gem install rubocop
+```
+
+```bash
+# raw
+rubocop linters/rubocop/lint_check.rb
+
+# structured
+structured_return({ command: "rubocop --format json linters/rubocop/lint_check.rb", parseAs: "rubocop-json" })
+```
+
+### hadolint
+
+```bash
+# raw
+hadolint linters/hadolint/Dockerfile
+
+# structured
+structured_return({ command: "hadolint --format json linters/hadolint/Dockerfile", parseAs: "hadolint-json" })
+```
+
+### stylelint
+
+Setup (install once):
+
+```bash
+npm install -g stylelint stylelint-config-standard
+```
+
+```bash
+# raw
+stylelint linters/stylelint/lint_check.css
+
+# structured
+structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
+```
+
+### swiftc
+
+```bash
+# raw
+swiftc -typecheck linters/swiftc/type_check.swift
+
+# structured
+structured_return({ command: "swiftc -typecheck linters/swiftc/type_check.swift", parseAs: "swiftc-text" })
 ```
 
 ## Pipeline tools
