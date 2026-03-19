@@ -23,6 +23,7 @@ import goTestJson from "../parsers/go-test-json";
 import avaText from "../parsers/ava-text";
 import pyrightJson from "../parsers/pyright-json";
 import banditJson from "../parsers/bandit-json";
+import javacText from "../parsers/javac-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -49,6 +50,7 @@ const builtIns: Record<string, ParserModule> = {
   "ava-text": avaText,
   "pyright-json": pyrightJson,
   "bandit-json": banditJson,
+  "javac-text": javacText,
   "tail-fallback": tailFallback,
 };
 
@@ -158,6 +160,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "bandit-json",
     detect: (argv) => argv.includes("bandit") && hasFlag(argv, "-f", "json"),
+  },
+  {
+    parserId: "javac-text",
+    detect: (argv) => argv.includes("javac") && !argv.includes("-version"),
   },
 ];
 

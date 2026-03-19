@@ -344,6 +344,16 @@ stylelint linters/stylelint/lint_check.css
 structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
 ```
 
+### javac
+
+```bash
+# raw
+javac linters/javac/TypeCheck.java
+
+# structured
+structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
+```
+
 ### bandit
 
 ```bash
