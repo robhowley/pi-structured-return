@@ -39,6 +39,9 @@ Prefer better output at the source.
 ### bandit
 - `structured_return({ command: "bandit -f json [any bandit args]", parseAs: "bandit-json" })` — `-f json` is built into bandit; strips source snippets, CWE URLs, run metrics, and confidence labels; severity breakdown in summary
 
+### gcc / clang
+- `structured_return({ command: "gcc -c [any gcc args]", parseAs: "clang-text" })` — works with gcc, g++, clang, clang++; parses `file:line:col: error: message` from stderr; source snippets and caret indicators stripped; warning flags preserved as rule
+
 ### dotnet build
 - `structured_return({ command: "dotnet build [any dotnet args]", parseAs: "dotnet-build-text" })` — parses MSBuild `file(line,col): error CODE: message` format; strips restore/timing noise; deduplicates the inline+summary error repetition; absolute paths relativized
 

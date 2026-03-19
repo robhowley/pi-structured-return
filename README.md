@@ -92,6 +92,7 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
 | `bandit-json` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
 | `pyright-json` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
+| `clang-text` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
 | `javac-text` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
 | `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
 | `flake8` | 75 | — | **—** | already compact (`file:line:col: CODE message`); no parser — use `bash` directly |
@@ -117,7 +118,7 @@ At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 →
 
 **Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `bandit-json`
 
-**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`
+**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`, `clang-text`
 
 **Pipeline tools:** `dbt-json` (run, test, compile)
 

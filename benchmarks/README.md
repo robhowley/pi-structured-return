@@ -344,6 +344,16 @@ stylelint linters/stylelint/lint_check.css
 structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
 ```
 
+### gcc / clang
+
+```bash
+# raw
+gcc -c linters/clang/type_check.c -o /dev/null
+
+# structured
+structured_return({ command: "gcc -c linters/clang/type_check.c -o /dev/null", parseAs: "clang-text" })
+```
+
 ### dotnet build
 
 Run from `linters/dotnet-build/`:

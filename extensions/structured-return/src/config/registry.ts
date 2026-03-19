@@ -25,6 +25,7 @@ import pyrightJson from "../parsers/pyright-json";
 import banditJson from "../parsers/bandit-json";
 import javacText from "../parsers/javac-text";
 import dotnetBuildText from "../parsers/dotnet-build-text";
+import clangText from "../parsers/clang-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -53,6 +54,7 @@ const builtIns: Record<string, ParserModule> = {
   "bandit-json": banditJson,
   "javac-text": javacText,
   "dotnet-build-text": dotnetBuildText,
+  "clang-text": clangText,
   "tail-fallback": tailFallback,
 };
 
@@ -170,6 +172,12 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "dotnet-build-text",
     detect: (argv) => argv.includes("dotnet") && argv.includes("build"),
+  },
+  {
+    parserId: "clang-text",
+    detect: (argv) =>
+      (argv.includes("gcc") || argv.includes("g++") || argv.includes("clang") || argv.includes("clang++")) &&
+      (argv.includes("-c") || argv.includes("-o")),
   },
 ];
 
