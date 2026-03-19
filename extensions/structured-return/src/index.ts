@@ -42,19 +42,14 @@ export default function structuredReturn(pi: ExtensionAPI) {
     },
   });
 
-  pi.on("before_agent_start", async (event) => {
-    return {
-      systemPrompt:
-        event.systemPrompt +
-        "\n\nWhen running lint, test, build, or other shell commands, load and follow the `structured-return` skill before choosing how to invoke them.",
-    };
-  });
-
   pi.registerTool({
     name: "structured_return",
     label: "Structured Return",
     description:
       "Run a command, store full logs, apply an explicit or registered parser when available, and fall back to tail + log path.",
+    promptGuidelines: [
+      "Prefer structured_return over bash for test suites, linters, type checkers, and build commands - it returns compact results. Check the structured-return skill for the right flags and parseAs value for each tool.",
+    ],
     parameters: Type.Object({
       command: Type.String(),
       cwd: Type.Optional(Type.String()),
