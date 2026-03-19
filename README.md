@@ -105,7 +105,6 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 | `javac-text` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
 | `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
 | `black-text` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
-| `flake8` | 75 | — | **—** | already compact (`file:line:col: CODE message`); no parser — use `bash` directly |
 
 ### Pipeline tools
 
@@ -121,6 +120,20 @@ The numbers below use 3–4 model toy examples; real projects run hundreds of mo
 | `dbt-json` (compile) | 775 | 683 | **12%** | compiled SQL is the signal and returned verbatim |
 
 At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 → 20 tokens (99%).
+
+### Already compact — use `bash` directly
+
+Evaluated for structured parsing but raw output is already compact enough that a parser adds no reduction (or goes negative). Use `bash` instead of `structured_return` for these tools.
+
+| Tool | Raw tokens | Format | Why no parser |
+|---|---|---|---|
+| `go build` | 85 | `file:line:col: message` | one line per error, no decoration |
+| `flake8` | 75 | `file:line:col: CODE message` | no JSON without a plugin; text is already one line per violation |
+| `yamllint` | 72 | `file:line:col level message (rule)` | filename printed once; one line per issue |
+| `golangci-lint` | 59 | `file:line:col: message (linter)` | text output already minimal; JSON includes massive linter report |
+| `go vet` | ~60 | `file:line:col: message` | same format as go build |
+| `vulture` | 58 | `file:line: message (confidence%)` | single line per finding |
+| `pydocstyle` | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
 
 ## Built-in parsers
 
