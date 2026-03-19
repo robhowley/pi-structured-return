@@ -75,6 +75,9 @@ Prefer better output at the source.
 ### stylelint
 - `structured_return({ command: "stylelint [any stylelint args] --formatter json", parseAs: "stylelint-json" })` — `--formatter json` is built into stylelint; rule name suffix stripped from message text; requires a `.stylelintrc` config
 
+### node --test
+- `structured_return({ command: "node --test [any node test args]", parseAs: "node-test-text" })` — parses the default spec reporter output; strips full stack traces, assertion error internals, timing data; preserves expected/actual values from assertion failures
+
 ### ava
 - `structured_return({ command: "npx ava [any ava args] --no-color", parseAs: "ava-text" })` — parses default text output from stderr; assertion failures extract expected/actual from diff lines and file:line; runtime errors extract message and file:line from stack trace
 

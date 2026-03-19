@@ -60,6 +60,7 @@ Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 |---|---|---|---|---|
 | `go-test-json` | 1819 | 48 | **97%** | NDJSON event stream with stack traces; file:line + expected/actual preserved |
 | `junit-xml` (maven) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
+| `node-test-text` | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
 | `ava-text` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
 | `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
 | `junit-xml` (dotnet) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
@@ -114,7 +115,7 @@ At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 →
 
 ## Built-in parsers
 
-**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`
+**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`, `node-test-text`
 
 **Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `bandit-json`
 

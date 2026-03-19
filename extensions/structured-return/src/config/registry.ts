@@ -26,6 +26,7 @@ import banditJson from "../parsers/bandit-json";
 import javacText from "../parsers/javac-text";
 import dotnetBuildText from "../parsers/dotnet-build-text";
 import clangText from "../parsers/clang-text";
+import nodeTestText from "../parsers/node-test-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -55,6 +56,7 @@ const builtIns: Record<string, ParserModule> = {
   "javac-text": javacText,
   "dotnet-build-text": dotnetBuildText,
   "clang-text": clangText,
+  "node-test-text": nodeTestText,
   "tail-fallback": tailFallback,
 };
 
@@ -172,6 +174,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "dotnet-build-text",
     detect: (argv) => argv.includes("dotnet") && argv.includes("build"),
+  },
+  {
+    parserId: "node-test-text",
+    detect: (argv) => argv.includes("node") && argv.includes("--test"),
   },
   {
     parserId: "clang-text",

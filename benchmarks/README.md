@@ -228,6 +228,16 @@ npx ava test_math.js
 structured_return({ command: "npx ava test_math.js --no-color", parseAs: "ava-text" })
 ```
 
+### node --test (native)
+
+```bash
+# raw
+node --test test-runners/node-test/test_math.mjs
+
+# structured
+structured_return({ command: "node --test test-runners/node-test/test_math.mjs", parseAs: "node-test-text" })
+```
+
 ### unittest
 
 ```bash
