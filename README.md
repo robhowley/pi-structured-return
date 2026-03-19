@@ -6,12 +6,15 @@ Cross-platform Pi package that combines:
 - a `structured-return` skill for choosing compact / machine-readable command forms
 - a `structured-return` extension that captures output, stores artifacts, applies parsers, and falls back to tail + log path
 
+Tens of thousands of tokens per session saved by filtering noise from test suites, linters, build tools, and data pipelines
+so LLMs spend tokens on signal, not boilerplate.
+
 ## Token reduction
 
 Tool output is designed for humans: source diffs, line annotations, timing breakdowns, absolute paths repeated on every line. Useful on a terminal. Expensive in a model context, especially on failure when output is most verbose and the model needs to act fast.
 
-Test runners: 3 tests, 1 passing, 1 assertion failure, 1 unexpected error.
-Linters: 1 unused variable warning in a single file.
+- Test runners: 3 tests, 1 passing, 1 assertion failure, 1 unexpected error.
+- Linters: 1 unused variable warning in a single file.
 
 | Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
 |---|---|---|---|---|
@@ -19,9 +22,9 @@ Linters: 1 unused variable warning in a single file.
 | `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
 | `junit-xml` (dotnet) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| `cargo-test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
 | `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
-| `cargo-test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
 | `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
 | `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
@@ -31,11 +34,31 @@ Linters: 1 unused variable warning in a single file.
 
 Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
 
+### Pipeline tools
+
+dbt output is the noisiest tool in this repo relative to useful signal. Every run prints version info, adapter registration, project stats, concurrency settings, and per-node start/finish lines — all before any result. 
+
+The numbers below use 3–4 model toy examples; real projects run hundreds of models where the noise scales linearly and reduction compounds.
+
+- dbt run: 4 models, 1 passing, 1 DB error, 1 permissions error, 1 DAG skip.
+- dbt test: 3 tests, 1 passing, 1 uniqueness failure, 1 unit test diff.
+- dbt compile: 3 models compiled to SQL.
+
+| Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
+|---|---|---|---|---|
+| `dbt-json` (run, success) | 428 | 20 | **95%** | version, adapter, concurrency, per-model start/finish — all noise on success |
+| `dbt-json` (run, failure) | 618 | 198 | **68%** | error messages, model paths, compiled code paths preserved |
+| `dbt-json` (test) | 720 | 274 | **62%** | unit test diff tables preserved verbatim; preamble stripped |
+| `dbt-json` (compile) | 775 | 683 | **12%** | compiled SQL is the signal and returned verbatim |
+
+At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 → 20 tokens (99%).
+
 ## Built-in parsers
 - `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
 - `vitest-json`
 - `rspec-json`
 - `minitest-text` (parses default minitest output — no flags or reporters needed)
+- `dbt-json` (`dbt run/test/compile --log-format json` — errors, warnings, and unit test diffs from JSONL; compiled SQL returned for compile; success runs reduced to a one-line summary)
 - `cargo-build` (`cargo build --message-format=json` — errors with file, line, error code, and primary span label; warnings filtered out)
 - `cargo-test` (`cargo test` — assertion left/right values, panic messages, and file:line per failure; detects compilation failures and directs to `cargo build --message-format=json`)
 - `ruff-json` (`ruff check` only — `ruff format` has no json support)

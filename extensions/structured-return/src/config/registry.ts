@@ -8,6 +8,7 @@ import minitestText from "../parsers/minitest-text";
 import junitXml from "../parsers/junit-xml";
 import cargoBuild from "../parsers/cargo-build";
 import cargoTest from "../parsers/cargo-test";
+import dbtJson from "../parsers/dbt-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -19,6 +20,7 @@ const builtIns: Record<string, ParserModule> = {
   "junit-xml": junitXml,
   "cargo-build": cargoBuild,
   "cargo-test": cargoTest,
+  "dbt-json": dbtJson,
   "tail-fallback": tailFallback,
 };
 
@@ -60,6 +62,13 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "cargo-test",
     detect: (argv) => argv.includes("cargo") && argv.includes("test"),
+  },
+  {
+    parserId: "dbt-json",
+    detect: (argv) =>
+      argv.includes("dbt") &&
+      (argv.includes("run") || argv.includes("test") || argv.includes("compile")) &&
+      argv.some((a) => a === "--log-format" || a === "json" || a === "--log-format=json"),
   },
 ];
 

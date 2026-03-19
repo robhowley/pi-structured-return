@@ -1,0 +1,18 @@
+15:42:01  Running with dbt=1.8.4
+15:42:01  Registered adapter: bigquery=1.8.2
+15:42:01  Found 2847 models, 1423 sources, 892 tests, 34 seeds, 156 snapshots, 12 analyses, 1247 macros
+15:42:01  
+15:42:03  Concurrency: 8 threads (target='dev')
+15:42:03  
+15:42:03  1 of 3 START sql incremental model mart.mart__core__customer_engagement ............ [RUN]
+15:42:03  2 of 3 START sql incremental model mart.mart__core__customer_sessions .............. [RUN]
+15:42:03  3 of 3 START sql table model mart.mart__core__daily_active_customers ............... [RUN]
+15:42:18  1 of 3 OK created sql incremental model mart.mart__core__customer_engagement ....... [MERGE 124.5k rows, 2.3 GiB processed in 15.22s]
+15:42:22  2 of 3 OK created sql incremental model mart.mart__core__customer_sessions ......... [MERGE 89.2k rows, 1.8 GiB processed in 19.04s]
+15:42:35  3 of 3 OK created sql table model mart.mart__core__daily_active_customers .......... [CREATE TABLE 45.3k rows, 892.1 MiB processed in 32.11s]
+15:42:35  
+15:42:35  Finished running 2 incremental models, 1 table model in 0 hours 0 minutes and 34.22 seconds (34.22s).
+15:42:35  
+15:42:35  Completed successfully
+15:42:35  
+15:42:35  Done. PASS=3 WARN=0 ERROR=0 SKIP=0 TOTAL=3
