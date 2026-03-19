@@ -55,6 +55,19 @@ All matched files use Prettier code style!`;
     expect(result.summary).toBe("1 file has formatting issues");
   });
 
+  it("extensionless files (Dockerfile, Makefile) → not dropped", async () => {
+    const cwd = "/project";
+    const stdout = `Checking formatting...
+[warn] /project/Dockerfile
+[warn] /project/src/app.ts
+[warn] Code style issues found in 2 files. Run Prettier with --write to fix.`;
+    const result = await parser.parse(makeCtx(stdout, "", cwd));
+    expect(result.status).toBe("fail");
+    expect(result.failures).toHaveLength(2);
+    expect(result.failures![0].file).toBe("Dockerfile");
+    expect(result.failures![1].file).toBe("src/app.ts");
+  });
+
   it("empty output → no crash, status pass", async () => {
     const result = await parser.parse(makeCtx(""));
     expect(result.status).toBe("pass");

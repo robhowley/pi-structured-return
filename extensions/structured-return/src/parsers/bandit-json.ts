@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { ParserModule } from "../types";
+import type { ParserModule, ParsedFailure } from "../types";
 import { safeReadFile } from "./utils";
 
 interface BanditResult {
@@ -42,7 +42,7 @@ const parser: ParserModule = {
     }
 
     const results = output.results ?? [];
-    const failures = results.map((r) => {
+    const failures: ParsedFailure[] = results.map((r) => {
       const relPath = path.relative(ctx.cwd, r.filename);
       return {
         id: `${relPath}:${r.line_number}:${r.test_id}`,

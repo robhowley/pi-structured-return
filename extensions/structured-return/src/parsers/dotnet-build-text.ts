@@ -27,7 +27,7 @@ const parser: ParserModule = {
         id: key,
         file: relPath,
         line: parseInt(lineNum, 10),
-        message: message.replace(/'/g, ""),
+        message,
         rule: code,
       });
     }

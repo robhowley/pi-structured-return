@@ -2,12 +2,8 @@ import path from "node:path";
 import type { ParserModule, ParsedFailure } from "../types";
 import { safeReadFile } from "./utils";
 
-// "would reformat file.py" or "error: cannot format file.py: ..."
 const REFORMAT_LINE = /^would reformat (.+)$/;
 const ERROR_FORMAT = /^error: cannot format (.+?): (.+)$/;
-// Summary: "N files would be reformatted." or "N files would fail to reformat."
-// Summary patterns kept for reference but not used — we derive count from failures array
-// const FAIL_SUMMARY = /^(\d+) files? would fail to reformat/;
 
 const parser: ParserModule = {
   id: "black-text",

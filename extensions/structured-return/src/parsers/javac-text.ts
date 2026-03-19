@@ -1,10 +1,12 @@
 import path from "node:path";
-import type { ParserModule } from "../types";
+import type { ParserModule, ParsedFailure } from "../types";
 import { safeReadFile } from "./utils";
 
 const ERROR_LINE = /^(.+?):(\d+): error: (.+)$/;
 const SYMBOL_LINE = /^\s+symbol:\s+(.+)$/;
 const SUMMARY_LINE = /^(\d+) errors?$/;
+const CARET_LINE = /^\s+\^/;
+const SOURCE_SNIPPET = /^\s{8,}\S/;
 
 const parser: ParserModule = {
   id: "javac-text",
@@ -21,7 +23,7 @@ const parser: ParserModule = {
     }
 
     const lines = stderr.split("\n");
-    const failures: Array<{ id: string; file: string; line: number; message: string }> = [];
+    const failures: ParsedFailure[] = [];
     let summaryLine = "";
 
     for (let i = 0; i < lines.length; i++) {
@@ -39,8 +41,8 @@ const parser: ParserModule = {
           } else if (/^\s+location:/.test(lines[j])) {
             // Skip location lines — they repeat the class name which is in the file path
             continue;
-          } else if (/^\s+\^/.test(lines[j]) || /^\s+\S/.test(lines[j])) {
-            // Source snippet or caret indicator — skip
+          } else if (CARET_LINE.test(lines[j]) || SOURCE_SNIPPET.test(lines[j])) {
+            // Caret indicator or deeply-indented source snippet — skip
             continue;
           } else {
             break;

@@ -29,13 +29,11 @@ const parser: ParserModule = {
       if (errorMatch) {
         const [, filePath, lineNum, , message, flag] = errorMatch;
         const relPath = path.relative(ctx.cwd, filePath);
-        // Strip quotes from message for cleaner output
-        const cleanMsg = message.replace(/'/g, "");
         failures.push({
           id: `${relPath}:${lineNum}`,
           file: relPath,
           line: parseInt(lineNum, 10),
-          message: cleanMsg,
+          message,
           rule: flag?.trim().replace(/^\[/, "").replace(/\]$/, ""),
         });
         continue;

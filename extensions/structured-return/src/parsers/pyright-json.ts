@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { ParserModule } from "../types";
+import type { ParserModule, ParsedFailure } from "../types";
 import { safeReadFile } from "./utils";
 
 interface PyrightDiagnostic {
@@ -46,7 +46,7 @@ const parser: ParserModule = {
     }
 
     const diagnostics = (output.generalDiagnostics ?? []).filter((d) => d.severity === "error");
-    const failures = diagnostics.map((d) => {
+    const failures: ParsedFailure[] = diagnostics.map((d) => {
       const relPath = path.relative(ctx.cwd, d.file);
       // pyright uses 0-based lines in JSON
       const line = d.range ? d.range.start.line + 1 : undefined;

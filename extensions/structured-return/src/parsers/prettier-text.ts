@@ -2,8 +2,9 @@ import path from "node:path";
 import type { ParserModule, ParsedFailure } from "../types";
 import { safeReadFile } from "./utils";
 
-// [warn] file.ts
-const WARN_FILE = /^\[warn\] (.+\.\w+)$/;
+// [warn] /path/to/file — but not summary lines like "[warn] Code style issues..."
+const WARN_LINE = /^\[warn\] (.+)$/;
+const SUMMARY_PREFIX = /^Code style issues|^Run Prettier/;
 
 const parser: ParserModule = {
   id: "prettier-text",
@@ -23,8 +24,8 @@ const parser: ParserModule = {
     const failures: ParsedFailure[] = [];
 
     for (const line of lines) {
-      const warnMatch = line.match(WARN_FILE);
-      if (warnMatch) {
+      const warnMatch = line.match(WARN_LINE);
+      if (warnMatch && !SUMMARY_PREFIX.test(warnMatch[1])) {
         const relPath = path.relative(ctx.cwd, warnMatch[1]);
         failures.push({
           id: relPath,
@@ -45,14 +46,13 @@ const parser: ParserModule = {
       };
     }
 
+    const n = failures.length;
     const summary =
-      failures.length > 0
-        ? `${failures.length} file${failures.length !== 1 ? "s" : ""} ha${failures.length !== 1 ? "ve" : "s"} formatting issues`
-        : "all files formatted";
+      n > 0 ? (n === 1 ? "1 file has formatting issues" : `${n} files have formatting issues`) : "all files formatted";
 
     return {
       tool: "prettier",
-      status: failures.length > 0 ? "fail" : "pass",
+      status: n > 0 ? "fail" : "pass",
       summary,
       failures,
       logPath: ctx.logPath,

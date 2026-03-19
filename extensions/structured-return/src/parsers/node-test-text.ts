@@ -6,14 +6,8 @@ import { safeReadFile } from "./utils";
 const SUMMARY_PASS = /^ℹ pass (\d+)/m;
 const SUMMARY_FAIL = /^ℹ fail (\d+)/m;
 
-// Failing test header: test at file:line:col or ✖ name (duration)
+// Failing test header: test at file:line:col
 const TEST_AT_LINE = /^test at (.+?):(\d+):\d+/;
-const FAIL_HEADER = /^✖ (.+?) \(/;
-
-// AssertionError message patterns
-const STRICT_EQUAL = /Expected values to be strictly equal:\s*\n\s*\n\s*(.+)/;
-const FALSY_EXPR = /The expression evaluated to a falsy value:\s*\n\s*\n\s*(.+)/;
-const GENERIC_ASSERT = /^(AssertionError.*?)$/m;
 
 const parser: ParserModule = {
   id: "node-test-text",
@@ -44,7 +38,7 @@ const parser: ParserModule = {
 
       for (const block of blocks) {
         const atMatch = block.match(TEST_AT_LINE);
-        const nameMatch = block.match(FAIL_HEADER);
+        const nameMatch = block.match(/^✖ (.+?) \(/m);
 
         let file: string | undefined;
         let line: number | undefined;
@@ -55,18 +49,18 @@ const parser: ParserModule = {
 
         const name = nameMatch ? nameMatch[1] : "unknown test";
 
-        // Extract meaningful error message
+        // Extract meaningful error message — try specific patterns first, then generic
         let message = name;
-        const strictMatch = block.match(STRICT_EQUAL);
-        const falsyMatch = block.match(FALSY_EXPR);
+        const strictMatch = block.match(/Expected values to be strictly equal:\s*\n\s*\n\s*(.+)/);
+        const falsyMatch = block.match(/The expression evaluated to a falsy value:\s*\n\s*\n\s*(.+)/);
         if (strictMatch) {
           message = `Expected values to be strictly equal: ${strictMatch[1].trim()}`;
         } else if (falsyMatch) {
           message = `The expression evaluated to a falsy value: ${falsyMatch[1].trim()}`;
         } else {
-          // Try generic error message
-          const genericMatch = block.match(GENERIC_ASSERT);
-          if (genericMatch) message = genericMatch[1];
+          // Match any Error type (AssertionError, TypeError, ReferenceError, etc.)
+          const errorMatch = block.match(/^\s+(\w*Error\b.*?)$/m);
+          if (errorMatch) message = errorMatch[1].replace(/\s*\[ERR_\w+\]:\s*/, ": ").replace(/^\w+Error: /, "");
         }
 
         failures.push({

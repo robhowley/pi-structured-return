@@ -84,6 +84,31 @@ test at /project/src/test_math.mjs:13:3
     expect(result.failures).toHaveLength(0);
   });
 
+  it("non-assertion error (TypeError) → captures error message", async () => {
+    const cwd = "/project";
+    const stdout = `▶ suite
+  ✖ throws type error (1ms)
+✖ suite (2ms)
+ℹ tests 1
+ℹ suites 1
+ℹ pass 0
+ℹ fail 1
+ℹ duration_ms 50.0
+
+✖ failing tests:
+
+test at /project/src/test.mjs:5:3
+✖ throws type error (1ms)
+  TypeError: Cannot read properties of null (reading 'foo')
+      at TestContext.<anonymous> (file:///project/src/test.mjs:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)`;
+    const result = await parser.parse(makeCtx(stdout, cwd));
+    expect(result.status).toBe("fail");
+    expect(result.failures).toHaveLength(1);
+    expect(result.failures![0].message).toContain("Cannot read properties of null");
+    expect(result.failures![0].message).not.toContain("at Test");
+  });
+
   it("empty stdout → no crash, status pass", async () => {
     const result = await parser.parse(makeCtx(""));
     expect(result.status).toBe("pass");
