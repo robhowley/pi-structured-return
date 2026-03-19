@@ -228,6 +228,16 @@ npx ava test_math.js
 structured_return({ command: "npx ava test_math.js --no-color", parseAs: "ava-text" })
 ```
 
+### node --test (native)
+
+```bash
+# raw
+node --test test-runners/node-test/test_math.mjs
+
+# structured
+structured_return({ command: "node --test test-runners/node-test/test_math.mjs", parseAs: "node-test-text" })
+```
+
 ### unittest
 
 ```bash
@@ -342,6 +352,160 @@ stylelint linters/stylelint/lint_check.css
 
 # structured
 structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
+```
+
+### gcc / clang
+
+```bash
+# raw
+gcc -c linters/clang/type_check.c -o /dev/null
+
+# structured
+structured_return({ command: "gcc -c linters/clang/type_check.c -o /dev/null", parseAs: "clang-text" })
+```
+
+### dotnet build
+
+Run from `linters/dotnet-build/`:
+
+```bash
+# raw
+dotnet build
+
+# structured
+structured_return({ command: "dotnet build", parseAs: "dotnet-build-text" })
+```
+
+### javac
+
+```bash
+# raw
+javac linters/javac/TypeCheck.java
+
+# structured
+structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
+```
+
+### htmlhint
+
+```bash
+# raw
+npx htmlhint linters/htmlhint/check.html
+
+# structured
+structured_return({ command: "npx htmlhint --format json linters/htmlhint/check.html", parseAs: "htmlhint-json" })
+```
+
+### isort
+
+```bash
+# raw
+isort --check --diff linters/isort/import_check.py
+
+# structured
+structured_return({ command: "isort --check --diff linters/isort/import_check.py", parseAs: "isort-text" })
+```
+
+### npm audit
+
+Setup (run once from `linters/npm-audit/`):
+
+```bash
+cd linters/npm-audit && npm install
+```
+
+```bash
+# raw
+npm audit
+
+# structured
+structured_return({ command: "npm audit --json", parseAs: "npm-audit-json" })
+```
+
+### jsonlint
+
+```bash
+# raw
+npx jsonlint linters/jsonlint/check.json
+
+# structured
+structured_return({ command: "npx jsonlint linters/jsonlint/check.json", parseAs: "jsonlint-text" })
+```
+
+### tidy
+
+```bash
+# raw
+tidy -errors linters/tidy/check.html
+
+# structured
+structured_return({ command: "tidy -errors linters/tidy/check.html", parseAs: "tidy-text" })
+```
+
+### vale
+
+Setup (install once, create `.vale.ini` config):
+
+```bash
+brew install vale
+```
+
+```bash
+# raw
+vale linters/vale/prose_check.md
+
+# structured
+structured_return({ command: "vale --output JSON linters/vale/prose_check.md", parseAs: "vale-json" })
+```
+
+### prettier
+
+```bash
+# raw
+prettier --check linters/prettier/format_check.ts
+
+# structured
+structured_return({ command: "prettier --check linters/prettier/format_check.ts", parseAs: "prettier-text" })
+```
+
+### markdownlint
+
+```bash
+# raw
+markdownlint linters/markdownlint/lint_check.md
+
+# structured
+structured_return({ command: "markdownlint --json linters/markdownlint/lint_check.md", parseAs: "markdownlint-json" })
+```
+
+### black
+
+```bash
+# raw
+black --check --diff linters/black/format_check.py
+
+# structured
+structured_return({ command: "black --check linters/black/format_check.py", parseAs: "black-text" })
+```
+
+### bandit
+
+```bash
+# raw
+bandit linters/bandit/security_check.py
+
+# structured
+structured_return({ command: "bandit -f json linters/bandit/security_check.py", parseAs: "bandit-json" })
+```
+
+### pyright
+
+```bash
+# raw
+pyright linters/pyright/type_check.py
+
+# structured
+structured_return({ command: "pyright --outputjson linters/pyright/type_check.py", parseAs: "pyright-json" })
 ```
 
 ### swiftc

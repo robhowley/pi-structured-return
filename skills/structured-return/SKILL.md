@@ -30,11 +30,50 @@ Prefer better output at the source.
 ### ruff check
 - `structured_return({ command: "ruff check [any ruff args] --output-format=json", parseAs: "ruff-json" })` — scope, selects, ignores, etc. go in `[any ruff args]`
 
-### ruff format
-- `ruff format --check .` (no structured_return — json output not supported)
-
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
+
+### htmlhint
+- `structured_return({ command: "npx htmlhint --format json [any htmlhint args]", parseAs: "htmlhint-json" })` — `--format json` outputs structured array; strips ANSI codes, source evidence, rule descriptions, and URLs
+
+### isort
+- `structured_return({ command: "isort --check --diff [any isort args]", parseAs: "isort-text" })` — parses `--check` output; strips diff hunks, absolute paths, timestamps; lists files with unsorted imports
+
+### npm audit
+- `structured_return({ command: "npm audit --json", parseAs: "npm-audit-json" })` — `--json` is built into npm; strips advisory URLs, CVSS vectors, fix instructions; advisory titles joined per package; severity breakdown in summary
+
+### jsonlint
+- `structured_return({ command: "npx jsonlint [file]", parseAs: "jsonlint-text" })` — strips stack trace and source pointer; extracts line number and "Expecting X, got Y" message
+
+### tidy (HTML Tidy)
+- `structured_return({ command: "tidy -errors [any tidy args]", parseAs: "tidy-text" })` — parses `line N column N - Warning/Error: message` from stderr; strips remediation advice, accessibility tips, reformatted HTML output, and Info lines
+
+### vale
+- `structured_return({ command: "vale --output JSON [any vale args]", parseAs: "vale-json" })` — `--output JSON` is built into vale; strips ANSI codes, Action/Span metadata, column-aligned formatting; severity breakdown in summary
+
+### prettier
+- `structured_return({ command: "prettier --check [any prettier args]", parseAs: "prettier-text" })` — parses `--check` output; strips "Checking formatting..." preamble, [warn] prefixes, and "Run Prettier with --write to fix" footer
+
+### markdownlint
+- `structured_return({ command: "markdownlint --json [any markdownlint args]", parseAs: "markdownlint-json" })` — `--json` outputs structured array; strips context quotes, rule info URLs, fix info, and error ranges; error details folded into description
+
+### black
+- `structured_return({ command: "black --check [any black args]", parseAs: "black-text" })` — parses `--check` output; strips diff hunks, emoji banners, timestamps; lists files needing reformatting; also handles `--check --diff` mode
+
+### bandit
+- `structured_return({ command: "bandit -f json [any bandit args]", parseAs: "bandit-json" })` — `-f json` is built into bandit; strips source snippets, CWE URLs, run metrics, and confidence labels; severity breakdown in summary
+
+### gcc / clang
+- `structured_return({ command: "gcc -c [any gcc args]", parseAs: "clang-text" })` — works with gcc, g++, clang, clang++; parses `file:line:col: error: message` from stderr; source snippets and caret indicators stripped; warning flags preserved as rule
+
+### dotnet build
+- `structured_return({ command: "dotnet build [any dotnet args]", parseAs: "dotnet-build-text" })` — parses MSBuild `file(line,col): error CODE: message` format; strips restore/timing noise; deduplicates the inline+summary error repetition; absolute paths relativized
+
+### javac
+- `structured_return({ command: "javac [any javac args]", parseAs: "javac-text" })` — parses `file:line: error: message` from stderr; source snippets and caret indicators stripped; `cannot find symbol` errors fold the symbol continuation line into the message
+
+### pyright
+- `structured_return({ command: "pyright --outputjson [any pyright args]", parseAs: "pyright-json" })` — `--outputjson` is built into pyright; JSON output includes file, line, message, and rule code; multi-line detail messages collapsed; warnings excluded from failures
 
 ### tsc
 - `structured_return({ command: "tsc --noEmit --pretty false [any tsc args]", parseAs: "tsc-text" })` — `--pretty false` suppresses source snippets and ANSI codes; parser extracts file, line, TS error code, and message from the compact `file(line,col): error TSXXXX: message` format
@@ -48,9 +87,6 @@ Prefer better output at the source.
 ### rubocop
 - `structured_return({ command: "rubocop [any rubocop args] --format json", parseAs: "rubocop-json" })` — `--format json` is built into rubocop; cop name prefix stripped from messages; source snippets and caret indicators removed
 
-### flake8
-- `flake8 [any flake8 args]` (no structured_return — default output is already compact `file:line:col: CODE message`; no JSON without a plugin; use `bash` directly)
-
 ### swiftc
 - `structured_return({ command: "swiftc -typecheck [any swiftc args]", parseAs: "swiftc-text" })` — parses `file:line:col: error: message` from stderr; source annotations and duplicate error lines deduplicated; warnings filtered out
 
@@ -59,6 +95,9 @@ Prefer better output at the source.
 
 ### stylelint
 - `structured_return({ command: "stylelint [any stylelint args] --formatter json", parseAs: "stylelint-json" })` — `--formatter json` is built into stylelint; rule name suffix stripped from message text; requires a `.stylelintrc` config
+
+### node --test
+- `structured_return({ command: "node --test [any node test args]", parseAs: "node-test-text" })` — parses the default spec reporter output; strips full stack traces, assertion error internals, timing data; preserves expected/actual values from assertion failures
 
 ### ava
 - `structured_return({ command: "npx ava [any ava args] --no-color", parseAs: "ava-text" })` — parses default text output from stderr; assertion failures extract expected/actual from diff lines and file:line; runtime errors extract message and file:line from stack trace
@@ -134,3 +173,16 @@ Jest requires the `jest-junit` reporter (`npm install --save-dev jest-junit`). P
 `xcodebuild` output is high-volume and not directly parseable. Pipe through `xcbeautify` (install with `brew install xcbeautify`) to get JUnit XML:
 
 - `structured_return({ command: "xcodebuild test -scheme [scheme] -destination '[destination]' 2>&1 | xcbeautify --report junit --output .tmp", parseAs: "junit-xml", artifactPaths: [".tmp/report.junit.xml"] })` — xcbeautify writes `report.junit.xml` into the `--output` directory; run `xcodebuild -showdestinations -scheme [scheme]` first to find the correct `[destination]` string for the project
+
+## Already compact — use `bash` directly
+
+These tools were evaluated for structured parsing but their output is already compact enough that a parser adds no token reduction. Use `bash` instead of `structured_return`.
+
+- `flake8 [any flake8 args]` — `file:line:col: CODE message`, one line per violation
+- `ruff format --check .` — just lists files needing formatting
+- `go build [any go build args]` — `file:line:col: message`, one line per error
+- `go vet [any go vet args]` — same format as go build
+- `golangci-lint run [any golangci-lint args]` — `file:line:col: message (linter)`, already minimal
+- `yamllint [any yamllint args]` — `file:line:col level message (rule)`, one line per issue
+- `pydocstyle [any pydocstyle args]` — `file:line context + CODE: message`, two lines per issue
+- `vulture [any vulture args]` — `file:line: message (confidence%)`, one line per finding

@@ -21,6 +21,21 @@ import mochaJson from "../parsers/mocha-json";
 import unittestText from "../parsers/unittest-text";
 import goTestJson from "../parsers/go-test-json";
 import avaText from "../parsers/ava-text";
+import pyrightJson from "../parsers/pyright-json";
+import banditJson from "../parsers/bandit-json";
+import javacText from "../parsers/javac-text";
+import dotnetBuildText from "../parsers/dotnet-build-text";
+import clangText from "../parsers/clang-text";
+import nodeTestText from "../parsers/node-test-text";
+import blackText from "../parsers/black-text";
+import markdownlintJson from "../parsers/markdownlint-json";
+import prettierText from "../parsers/prettier-text";
+import valeJson from "../parsers/vale-json";
+import tidyText from "../parsers/tidy-text";
+import jsonlintText from "../parsers/jsonlint-text";
+import npmAuditJson from "../parsers/npm-audit-json";
+import isortText from "../parsers/isort-text";
+import htmlhintJson from "../parsers/htmlhint-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -45,6 +60,21 @@ const builtIns: Record<string, ParserModule> = {
   "unittest-text": unittestText,
   "go-test-json": goTestJson,
   "ava-text": avaText,
+  "pyright-json": pyrightJson,
+  "bandit-json": banditJson,
+  "javac-text": javacText,
+  "dotnet-build-text": dotnetBuildText,
+  "clang-text": clangText,
+  "node-test-text": nodeTestText,
+  "black-text": blackText,
+  "markdownlint-json": markdownlintJson,
+  "prettier-text": prettierText,
+  "vale-json": valeJson,
+  "tidy-text": tidyText,
+  "jsonlint-text": jsonlintText,
+  "npm-audit-json": npmAuditJson,
+  "isort-text": isortText,
+  "htmlhint-json": htmlhintJson,
   "tail-fallback": tailFallback,
 };
 
@@ -146,6 +176,68 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "ava-text",
     detect: (argv) => argv.includes("ava"),
+  },
+  {
+    parserId: "pyright-json",
+    detect: (argv) => argv.includes("pyright") && argv.includes("--outputjson"),
+  },
+  {
+    parserId: "bandit-json",
+    detect: (argv) => argv.includes("bandit") && hasFlag(argv, "-f", "json"),
+  },
+  {
+    parserId: "javac-text",
+    detect: (argv) => argv.includes("javac") && !argv.includes("-version"),
+  },
+  {
+    parserId: "dotnet-build-text",
+    detect: (argv) => argv.includes("dotnet") && argv.includes("build"),
+  },
+  {
+    parserId: "node-test-text",
+    detect: (argv) => argv.includes("node") && argv.includes("--test"),
+  },
+  {
+    parserId: "black-text",
+    detect: (argv) => argv.includes("black") && argv.includes("--check"),
+  },
+  {
+    parserId: "markdownlint-json",
+    detect: (argv) => argv.includes("markdownlint") && argv.includes("--json"),
+  },
+  {
+    parserId: "prettier-text",
+    detect: (argv) => argv.includes("prettier") && argv.includes("--check"),
+  },
+  {
+    parserId: "tidy-text",
+    detect: (argv) => argv.includes("tidy"),
+  },
+  {
+    parserId: "jsonlint-text",
+    detect: (argv) => argv.includes("jsonlint"),
+  },
+  {
+    parserId: "htmlhint-json",
+    detect: (argv) => argv.includes("htmlhint") && hasFlag(argv, "--format", "json"),
+  },
+  {
+    parserId: "isort-text",
+    detect: (argv) => argv.includes("isort") && argv.includes("--check"),
+  },
+  {
+    parserId: "npm-audit-json",
+    detect: (argv) => argv.includes("npm") && argv.includes("audit") && argv.includes("--json"),
+  },
+  {
+    parserId: "vale-json",
+    detect: (argv) => argv.includes("vale") && hasFlag(argv, "--output", "JSON"),
+  },
+  {
+    parserId: "clang-text",
+    detect: (argv) =>
+      (argv.includes("gcc") || argv.includes("g++") || argv.includes("clang") || argv.includes("clang++")) &&
+      (argv.includes("-c") || argv.includes("-o")),
   },
 ];
 

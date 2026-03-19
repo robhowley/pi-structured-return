@@ -60,6 +60,7 @@ Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 |---|---|---|---|---|
 | `go-test-json` | 1819 | 48 | **97%** | NDJSON event stream with stack traces; file:line + expected/actual preserved |
 | `junit-xml` (maven) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
+| `node-test-text` | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
 | `ava-text` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
 | `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
 | `junit-xml` (dotnet) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
@@ -79,6 +80,7 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 
 | Parser | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
+| `dotnet-build-text` | 383 | 53 | **86%** | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
 | `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
 | `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
@@ -88,9 +90,21 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 | `stylelint-json` | 70 | 51 | **27%** | strips summary footer and fix hint |
 | `pylint-json` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
 | `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
+| `prettier-text` | 38 | 33 | **13%** | strips preamble, [warn] prefixes, footer hint; scales with file count |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
+| `jsonlint-text` | 148 | 28 | **81%** | strips stack trace, source pointer line; preserves line number and expecting message |
+| `npm-audit-json` | 158 | 50 | **68%** | strips advisory URLs, fix instructions, CVSS vectors; advisory titles joined per package |
+| `isort-text` | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
+| `htmlhint-json` | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
+| `tidy-text` | 233 | 51 | **78%** | strips remediation advice, accessibility tips, HTML output, Info lines |
+| `bandit-json` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
+| `markdownlint-json` | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
+| `vale-json` | 141 | 79 | **44%** | strips ANSI codes, Action/Span/Description fields, column-aligned formatting |
+| `pyright-json` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
+| `clang-text` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
+| `javac-text` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
 | `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
-| `flake8` | 75 | — | **—** | already compact (`file:line:col: CODE message`); no parser — use `bash` directly |
+| `black-text` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
 
 ### Pipeline tools
 
@@ -107,13 +121,29 @@ The numbers below use 3–4 model toy examples; real projects run hundreds of mo
 
 At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 → 20 tokens (99%).
 
+### Already compact — use `bash` directly
+
+Evaluated for structured parsing but raw output is already compact enough that a parser adds no reduction (or goes negative). Use `bash` instead of `structured_return` for these tools.
+
+| Tool | Raw tokens | Format | Why no parser |
+|---|---|---|---|
+| `go build` | 85 | `file:line:col: message` | one line per error, no decoration |
+| `flake8` | 75 | `file:line:col: CODE message` | no JSON without a plugin; text is already one line per violation |
+| `yamllint` | 72 | `file:line:col level message (rule)` | filename printed once; one line per issue |
+| `golangci-lint` | 59 | `file:line:col: message (linter)` | text output already minimal; JSON includes massive linter report |
+| `go vet` | ~60 | `file:line:col: message` | same format as go build |
+| `vulture` | 58 | `file:line: message (confidence%)` | single line per finding |
+| `pydocstyle` | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
+
 ## Built-in parsers
 
-**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`
+**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`, `node-test-text`
 
-**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`
+**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `black-text`, `markdownlint-json`, `prettier-text`, `vale-json`, `tidy-text`, `jsonlint-text`, `isort-text`, `htmlhint-json`
 
-**Build tools:** `cargo-build`
+**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`, `clang-text`
+
+**Security & audit:** `bandit-json`, `npm-audit-json`
 
 **Pipeline tools:** `dbt-json` (run, test, compile)
 
