@@ -30,9 +30,6 @@ Prefer better output at the source.
 ### ruff check
 - `structured_return({ command: "ruff check [any ruff args] --output-format=json", parseAs: "ruff-json" })` — scope, selects, ignores, etc. go in `[any ruff args]`
 
-### ruff format
-- `ruff format --check .` (no structured_return — json output not supported)
-
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
@@ -89,27 +86,6 @@ Prefer better output at the source.
 
 ### rubocop
 - `structured_return({ command: "rubocop [any rubocop args] --format json", parseAs: "rubocop-json" })` — `--format json` is built into rubocop; cop name prefix stripped from messages; source snippets and caret indicators removed
-
-### flake8
-- `flake8 [any flake8 args]` (no structured_return — default output is already compact `file:line:col: CODE message`; no JSON without a plugin; use `bash` directly)
-
-### yamllint
-- `yamllint [any yamllint args]` (no structured_return — default output is already compact `file:line:col: level message (rule)`; use `bash` directly)
-
-### pydocstyle
-- `pydocstyle [any pydocstyle args]` (no structured_return — default output is already compact `file:line context + CODE: message`; use `bash` directly)
-
-### vulture
-- `vulture [any vulture args]` (no structured_return — default output is already compact `file:line: message (confidence%)`; use `bash` directly)
-
-### golangci-lint
-- `golangci-lint run [any golangci-lint args]` (no structured_return — text output is already compact `file:line:col: message (linter)`; use `bash` directly)
-
-### go build
-- `go build [any go build args]` (no structured_return — error output is already compact `file:line:col: message`; use `bash` directly)
-
-### go vet
-- `go vet [any go vet args]` (no structured_return — output is already compact `file:line:col: message`; use `bash` directly)
 
 ### swiftc
 - `structured_return({ command: "swiftc -typecheck [any swiftc args]", parseAs: "swiftc-text" })` — parses `file:line:col: error: message` from stderr; source annotations and duplicate error lines deduplicated; warnings filtered out
@@ -197,3 +173,16 @@ Jest requires the `jest-junit` reporter (`npm install --save-dev jest-junit`). P
 `xcodebuild` output is high-volume and not directly parseable. Pipe through `xcbeautify` (install with `brew install xcbeautify`) to get JUnit XML:
 
 - `structured_return({ command: "xcodebuild test -scheme [scheme] -destination '[destination]' 2>&1 | xcbeautify --report junit --output .tmp", parseAs: "junit-xml", artifactPaths: [".tmp/report.junit.xml"] })` — xcbeautify writes `report.junit.xml` into the `--output` directory; run `xcodebuild -showdestinations -scheme [scheme]` first to find the correct `[destination]` string for the project
+
+## Already compact — use `bash` directly
+
+These tools were evaluated for structured parsing but their output is already compact enough that a parser adds no token reduction. Use `bash` instead of `structured_return`.
+
+- `flake8 [any flake8 args]` — `file:line:col: CODE message`, one line per violation
+- `ruff format --check .` — just lists files needing formatting
+- `go build [any go build args]` — `file:line:col: message`, one line per error
+- `go vet [any go vet args]` — same format as go build
+- `golangci-lint run [any golangci-lint args]` — `file:line:col: message (linter)`, already minimal
+- `yamllint [any yamllint args]` — `file:line:col level message (rule)`, one line per issue
+- `pydocstyle [any pydocstyle args]` — `file:line context + CODE: message`, two lines per issue
+- `vulture [any vulture args]` — `file:line: message (confidence%)`, one line per finding
