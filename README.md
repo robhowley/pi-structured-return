@@ -1,96 +1,10 @@
 # pi-structured-return
 
-Structured command execution for pi agents: compact results for the model, full logs for humans.
-
-Cross-platform Pi package that combines:
-- a `structured-return` skill for choosing compact / machine-readable command forms
-- a `structured-return` extension that captures output, stores artifacts, applies parsers, and falls back to tail + log path
-
-Tens of thousands of tokens per session saved by filtering noise from test suites, linters, build tools, and data pipelines
-so LLMs spend tokens on signal, not boilerplate.
-
-## Token reduction
+Structured command execution for Pi agents: compact results for the model, full logs for humans.
 
 Tool output is designed for humans: source diffs, line annotations, timing breakdowns, absolute paths repeated on every line. Useful on a terminal. Expensive in a model context, especially on failure when output is most verbose and the model needs to act fast.
 
-- Test runners: 3 tests, 1 passing, 1 assertion failure, 1 unexpected error.
-- Linters: 1 unused variable warning in a single file.
-
-| Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
-|---|---|---|---|---|
-| `go-test-json` | 1819 | 48 | **97%** | NDJSON event stream with stack traces; file:line + expected/actual preserved |
-| `junit-xml` (maven) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
-| `ava-text` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
-| `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
-| `junit-xml` (dotnet) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
-| `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
-| `unittest-text` | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
-| `cargo-test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
-| `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
-| `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
-| `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
-| `mocha-json` | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
-| `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
-| `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
-| `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
-| `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
-| `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
-| `shellcheck-json` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
-| `rubocop-json` | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
-| `tsc-text` | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
-| `stylelint-json` | 70 | 51 | **27%** | strips summary footer and fix hint |
-| `pylint-json` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
-| `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
-| `eslint-json` | 64 | 59 | **8%** | already compact formatter |
-| `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
-| `flake8` | 75 | — | **—** | already compact (`file:line:col: CODE message`); no parser — use `bash` directly |
-
-Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files. mypy's 4% on a 2-error fixture is the floor — reduction scales with error count as the parser strips repeated `: error:` prefixes and summary lines. tsc's 33% is measured against the default `--pretty true` output — the parser forces `--pretty false` to strip source snippets, ANSI codes, and underline indicators.
-
-### Pipeline tools
-
-dbt output is the noisiest tool in this repo relative to useful signal. Every run prints version info, adapter registration, project stats, concurrency settings, and per-node start/finish lines — all before any result. 
-
-The numbers below use 3–4 model toy examples; real projects run hundreds of models where the noise scales linearly and reduction compounds.
-
-- dbt run: 4 models, 1 passing, 1 DB error, 1 permissions error, 1 DAG skip.
-- dbt test: 3 tests, 1 passing, 1 uniqueness failure, 1 unit test diff.
-- dbt compile: 3 models compiled to SQL.
-
-| Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
-|---|---|---|---|---|
-| `dbt-json` (run, success) | 428 | 20 | **95%** | version, adapter, concurrency, per-model start/finish — all noise on success |
-| `dbt-json` (run, failure) | 618 | 198 | **68%** | error messages, model paths, compiled code paths preserved |
-| `dbt-json` (test) | 720 | 274 | **62%** | unit test diff tables preserved verbatim; preamble stripped |
-| `dbt-json` (compile) | 775 | 683 | **12%** | compiled SQL is the signal and returned verbatim |
-
-At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 → 20 tokens (99%).
-
-## Built-in parsers
-- `junit-xml` (JUnit XML — covers pytest `--junitxml`, Gradle, Maven, Jest with `jest-junit`, Go with `go-junit-report`, and any other tool that emits the JUnit XML schema)
-- `vitest-json`
-- `rspec-json`
-- `minitest-text` (parses default minitest output — no flags or reporters needed)
-- `dbt-json` (`dbt run/test/compile --log-format json` — errors, warnings, and unit test diffs from JSONL; compiled SQL returned for compile; success runs reduced to a one-line summary)
-- `cargo-build` (`cargo build --message-format=json` — errors with file, line, error code, and primary span label; warnings filtered out)
-- `cargo-test` (`cargo test` — assertion left/right values, panic messages, and file:line per failure; detects compilation failures and directs to `cargo build --message-format=json`)
-- `ruff-json` (`ruff check` only — `ruff format` has no json support)
-- `eslint-json`
-- `mypy-json` (`mypy --output json` — NDJSON on stderr; type errors with file, line, message, error code; notes folded into parent errors)
-- `tsc-text` (`tsc --noEmit --pretty false` — parses compact `file(line,col): error TSXXXX: message` format; strips source snippets and ANSI codes)
-- `pylint-json` (`pylint --output-format=json` — lint errors with file, line, message, message-id and symbol name)
-- `shellcheck-json` (`shellcheck --format=json` — shell script lint errors with file, line, message, SC code; source snippets and suggestions stripped)
-- `rubocop-json` (`rubocop --format json` — Ruby lint errors with file, line, message, cop name; source snippets stripped)
-- `swiftc-text` (`swiftc -typecheck` — Swift compiler errors from stderr; source annotations deduplicated)
-- `hadolint-json` (`hadolint --format json` — Dockerfile lint errors with file, line, message, DL/SC code)
-- `stylelint-json` (`stylelint --formatter json` — CSS lint errors with file, line, message, rule name)
-- `ava-text` (`npx ava --no-color` — parses default text output from stderr; assertion diffs and stack traces stripped to file:line + expected/actual)
-- `mocha-json` (`mocha --reporter json` — assertion failures with explicit expected/actual; runtime errors with message and file:line from stack trace)
-- `unittest-text` (`python3 -m unittest` — parses verbose traceback output from stderr; expected/actual from AssertionError; file:line from traceback)
-- `go-test-json` (`go test -json` — NDJSON event stream; assertion messages and panic stack traces parsed to file:line + message; 97% reduction)
-
-
-## Before / after
+This Pi package adds a `structured_return` tool alongside `bash`. A bundled skill teaches the model when to reach for it — test suites, linters, build tools, data pipelines — anywhere verbose output burns tokens. It captures full logs, applies a parser, and returns a compact structured result. The full output stays on disk.
 
 **Raw pytest output (262 tokens):**
 ```
@@ -132,7 +46,83 @@ pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
   test_math.py:8  ZeroDivisionError: division by zero
 ```
 
+262 → 56 tokens. The model knows which tests failed, where, and why. No platform line, no progress bar, no source snippets, no banner separators, no short summary repeating the same info. And that's a single run — in an agentic loop the cost compounds. Every tool result accumulates in context for the life of the task. Over 15 red-green iterations, the difference isn't 262 vs 56 — it's 3,930 vs 840 tokens for one command in one task.
+
+## Token reduction
+
+Measured with `cl100k_base` (tiktoken). All benchmarks use tiny fixtures — reduction grows with real-world output.
+
+### Test runners
+
+Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
+
+| Parser | Raw | Structured | Reduction | Notes |
+|---|---|---|---|---|
+| `go-test-json` | 1819 | 48 | **97%** | NDJSON event stream with stack traces; file:line + expected/actual preserved |
+| `junit-xml` (maven) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
+| `ava-text` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
+| `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
+| `junit-xml` (dotnet) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
+| `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| `unittest-text` | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
+| `cargo-test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
+| `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
+| `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
+| `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
+| `mocha-json` | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
+| `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
+| `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
+
+### Linters, type checkers, and build tools
+
+Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound — scales with file and error count since raw output repeats paths, source snippets, and annotations per violation.
+
+| Parser | Raw | Structured | Reduction | Notes |
+|---|---|---|---|---|
+| `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
+| `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
+| `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
+| `shellcheck-json` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
+| `rubocop-json` | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
+| `tsc-text` | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
+| `stylelint-json` | 70 | 51 | **27%** | strips summary footer and fix hint |
+| `pylint-json` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
+| `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
+| `eslint-json` | 64 | 59 | **8%** | already compact formatter |
+| `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
+| `flake8` | 75 | — | **—** | already compact (`file:line:col: CODE message`); no parser — use `bash` directly |
+
+### Pipeline tools
+
+dbt output is the noisiest tool in this repo relative to useful signal. Every run prints version info, adapter registration, project stats, concurrency settings, and per-node start/finish lines — all before any result.
+
+The numbers below use 3–4 model toy examples; real projects run hundreds of models where the noise scales linearly and reduction compounds.
+
+| Parser | Raw | Structured | Reduction | Notes |
+|---|---|---|---|---|
+| `dbt-json` (run, success) | 428 | 20 | **95%** | version, adapter, concurrency, per-model start/finish — all noise on success |
+| `dbt-json` (run, failure) | 618 | 198 | **68%** | error messages, model paths, compiled code paths preserved |
+| `dbt-json` (test) | 720 | 274 | **62%** | unit test diff tables preserved verbatim; preamble stripped |
+| `dbt-json` (compile) | 775 | 683 | **12%** | compiled SQL is the signal and returned verbatim |
+
+At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 → 20 tokens (99%).
+
+## Built-in parsers
+
+**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`
+
+**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`
+
+**Build tools:** `cargo-build`
+
+**Pipeline tools:** `dbt-json` (run, test, compile)
+
+Run `/sr-parsers` in a pi session to see all registered parsers with their match rules.
+
+
 ## Installation
+
+Install the skill and extension:
 
 ```bash
 pi install npm:@robhowley/pi-structured-return
@@ -140,19 +130,11 @@ pi install npm:@robhowley/pi-structured-return
 
 ## How it works
 
-1. The agent runs commands through `structured_return` instead of `bash`.
+1. The agent runs commands through `structured_return` instead of `bash` when it would reduce noise and token usage.
 2. Full output is captured and stored as a log.
 3. A parser converts noisy CLI output into a compact structured result. If no parser matches, the last 200 lines and the log path are returned as a fallback.
 4. The agent receives the structured result in context — signal only, no noise.
 5. The full log is always available on disk for both the agent and humans to inspect.
-
-## Agentic loops
-
-The token table above measures a single run. In an agentic loop the cost compounds — every tool result accumulates in context for the life of the task.
-
-This applies to any loop: fixing a failing test suite, implementing a feature end-to-end, working through a migration, performance tuning execution times. The agent runs a command, reads the result, makes a change, runs it again. Each iteration adds another tool result to the context window. With a noisy CLI that means paying for the same verbose boilerplate every time.
-
-A parser reduces each run to a one- or two-line signal. Over 15 iterations the difference isn't 80 tokens vs 15 tokens — it's 1,200 tokens vs 225 for a single command in a single task.
 
 ## Extending with project-local parsers
 
@@ -217,9 +199,6 @@ export default {
 ```
 
 The parser receives a `RunContext` (command, argv, cwd, stdout/stderr paths, artifact paths, log path) and returns a `ParsedResult`. Match rules support `argvIncludes` (array of required tokens) or `regex` (tested against the full argv string).
-
-## Slash commands
-- `/sr-parsers` — list all registered parsers (built-in and project-local) with their match rules and targets
 
 ## Structured result schema
 
