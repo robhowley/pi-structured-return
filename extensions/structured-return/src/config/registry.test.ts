@@ -7,6 +7,33 @@ async function detect(argv: string[]) {
   return parser.id;
 }
 
+describe("resolveParser priority", () => {
+  it("explicit parseAs wins over auto-detect", async () => {
+    // argv would auto-detect as ruff-json, but parseAs overrides
+    const parser = await resolveParser({
+      cwd: "/project",
+      parseAs: "eslint-json",
+      argv: ["ruff", "check", "--output-format=json"],
+      registrations: [],
+    });
+    expect(parser.id).toBe("eslint-json");
+  });
+
+  it("project registration wins over auto-detect", async () => {
+    const parser = await resolveParser({
+      cwd: "/project",
+      argv: ["ruff", "check", "--output-format=json"],
+      registrations: [{ id: "custom", match: { argvIncludes: ["ruff"] }, parseAs: "eslint-json" }],
+    });
+    expect(parser.id).toBe("eslint-json");
+  });
+
+  it("falls back to tail-fallback when nothing matches", async () => {
+    const parser = await resolveParser({ cwd: "/project", argv: ["unknown-tool"], registrations: [] });
+    expect(parser.id).toBe("tail-fallback");
+  });
+});
+
 describe("AUTO_DETECT", () => {
   describe("hasFlag correctness — no false positives from bare value tokens", () => {
     it("eslint -f json matches", async () => {
@@ -99,6 +126,20 @@ describe("AUTO_DETECT", () => {
 
     it("dbt run without --log-format does NOT match", async () => {
       expect(await detect(["dbt", "run"])).toBe("tail-fallback");
+    });
+  });
+
+  describe("remaining flag-based detectors", () => {
+    it("rspec --format=json matches", async () => {
+      expect(await detect(["rspec", "--format=json"])).toBe("rspec-json");
+    });
+
+    it("cargo build --message-format=json matches", async () => {
+      expect(await detect(["cargo", "build", "--message-format=json"])).toBe("cargo-build");
+    });
+
+    it("pytest --junitxml matches junit-xml", async () => {
+      expect(await detect(["pytest", "--junitxml=report.xml"])).toBe("junit-xml");
     });
   });
 
