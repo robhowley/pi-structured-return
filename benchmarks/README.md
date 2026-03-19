@@ -386,6 +386,22 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### vale
+
+Setup (install once, create `.vale.ini` config):
+
+```bash
+brew install vale
+```
+
+```bash
+# raw
+vale linters/vale/prose_check.md
+
+# structured
+structured_return({ command: "vale --output JSON linters/vale/prose_check.md", parseAs: "vale-json" })
+```
+
 ### prettier
 
 ```bash
