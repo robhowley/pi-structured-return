@@ -1,6 +1,6 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { ParserModule, ParsedFailure } from "../types";
+import { safeReadFile } from "./utils";
 
 /**
  * Parses minitest's default text output. No flags or reporters required —
@@ -9,7 +9,7 @@ import type { ParserModule, ParsedFailure } from "../types";
 const parser: ParserModule = {
   id: "minitest-text",
   async parse(ctx) {
-    const output = fs.readFileSync(ctx.stdoutPath, "utf8");
+    const output = safeReadFile(ctx.stdoutPath);
 
     // "3 runs, 2 assertions, 1 failures, 1 errors, 0 skips"
     const summaryMatch = output.match(/(\d+) runs?, \d+ assertions?, (\d+) failures?, (\d+) errors?, (\d+) skips?/);

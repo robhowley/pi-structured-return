@@ -9,6 +9,18 @@ import junitXml from "../parsers/junit-xml";
 import cargoBuild from "../parsers/cargo-build";
 import cargoTest from "../parsers/cargo-test";
 import dbtJson from "../parsers/dbt-json";
+import mypyJson from "../parsers/mypy-json";
+import tscText from "../parsers/tsc-text";
+import pylintJson from "../parsers/pylint-json";
+import shellcheckJson from "../parsers/shellcheck-json";
+import rubocopJson from "../parsers/rubocop-json";
+import swiftcText from "../parsers/swiftc-text";
+import hadolintJson from "../parsers/hadolint-json";
+import stylelintJson from "../parsers/stylelint-json";
+import mochaJson from "../parsers/mocha-json";
+import unittestText from "../parsers/unittest-text";
+import goTestJson from "../parsers/go-test-json";
+import avaText from "../parsers/ava-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -21,31 +33,50 @@ const builtIns: Record<string, ParserModule> = {
   "cargo-build": cargoBuild,
   "cargo-test": cargoTest,
   "dbt-json": dbtJson,
+  "mypy-json": mypyJson,
+  "tsc-text": tscText,
+  "pylint-json": pylintJson,
+  "shellcheck-json": shellcheckJson,
+  "rubocop-json": rubocopJson,
+  "swiftc-text": swiftcText,
+  "hadolint-json": hadolintJson,
+  "stylelint-json": stylelintJson,
+  "mocha-json": mochaJson,
+  "unittest-text": unittestText,
+  "go-test-json": goTestJson,
+  "ava-text": avaText,
   "tail-fallback": tailFallback,
 };
+
+/**
+ * Check whether argv contains `--flag=value` (joined) or `--flag value` (adjacent).
+ * Avoids false positives from bare `value` tokens appearing elsewhere in argv.
+ */
+function hasFlag(argv: string[], flag: string, value: string): boolean {
+  if (argv.includes(`${flag}=${value}`)) return true;
+  for (let i = 0; i < argv.length - 1; i++) {
+    if (argv[i] === flag && argv[i + 1] === value) return true;
+  }
+  return false;
+}
 
 /** Built-in detection patterns — fire when no explicit parseAs or project registration matched. */
 const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean }> = [
   {
     parserId: "eslint-json",
-    detect: (argv) => argv.includes("eslint") && argv.includes("-f") && argv.includes("json"),
+    detect: (argv) => argv.includes("eslint") && hasFlag(argv, "-f", "json"),
   },
   {
     parserId: "ruff-json",
-    detect: (argv) =>
-      argv.includes("ruff") &&
-      argv.some((a) => a === "--output-format=json" || a === "json") &&
-      (argv.includes("--output-format=json") || argv.includes("--output-format")),
+    detect: (argv) => argv.includes("ruff") && hasFlag(argv, "--output-format", "json"),
   },
   {
     parserId: "vitest-json",
-    detect: (argv) => argv.includes("vitest") && argv.includes("--reporter=json"),
+    detect: (argv) => argv.includes("vitest") && hasFlag(argv, "--reporter", "json"),
   },
   {
     parserId: "rspec-json",
-    detect: (argv) =>
-      argv.includes("rspec") &&
-      (argv.includes("--format=json") || (argv.includes("--format") && argv.includes("json"))),
+    detect: (argv) => argv.includes("rspec") && hasFlag(argv, "--format", "json"),
   },
   {
     parserId: "junit-xml",
@@ -54,10 +85,7 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   },
   {
     parserId: "cargo-build",
-    detect: (argv) =>
-      argv.includes("cargo") &&
-      argv.includes("build") &&
-      argv.some((a) => a.startsWith("--message-format=json") || a === "json"),
+    detect: (argv) => argv.includes("cargo") && argv.includes("build") && hasFlag(argv, "--message-format", "json"),
   },
   {
     parserId: "cargo-test",
@@ -68,7 +96,56 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
     detect: (argv) =>
       argv.includes("dbt") &&
       (argv.includes("run") || argv.includes("test") || argv.includes("compile")) &&
-      argv.some((a) => a === "--log-format" || a === "json" || a === "--log-format=json"),
+      hasFlag(argv, "--log-format", "json"),
+  },
+  {
+    parserId: "mypy-json",
+    detect: (argv) => argv.includes("mypy") && hasFlag(argv, "--output", "json"),
+  },
+  {
+    parserId: "tsc-text",
+    detect: (argv) => argv.includes("tsc") && hasFlag(argv, "--pretty", "false"),
+  },
+  {
+    parserId: "pylint-json",
+    detect: (argv) => argv.includes("pylint") && hasFlag(argv, "--output-format", "json"),
+  },
+  {
+    parserId: "shellcheck-json",
+    detect: (argv) => argv.includes("shellcheck") && hasFlag(argv, "--format", "json"),
+  },
+  {
+    parserId: "rubocop-json",
+    detect: (argv) => argv.includes("rubocop") && hasFlag(argv, "--format", "json"),
+  },
+  {
+    parserId: "swiftc-text",
+    detect: (argv) => argv.includes("swiftc") && argv.includes("-typecheck"),
+  },
+  {
+    parserId: "hadolint-json",
+    detect: (argv) => argv.includes("hadolint") && hasFlag(argv, "--format", "json"),
+  },
+  {
+    parserId: "stylelint-json",
+    detect: (argv) => argv.includes("stylelint") && hasFlag(argv, "--formatter", "json"),
+  },
+  {
+    parserId: "mocha-json",
+    detect: (argv) => argv.includes("mocha") && hasFlag(argv, "--reporter", "json"),
+  },
+  {
+    parserId: "unittest-text",
+    detect: (argv) =>
+      argv.includes("unittest") || (argv.includes("python3") && argv.includes("-m") && argv.includes("unittest")),
+  },
+  {
+    parserId: "go-test-json",
+    detect: (argv) => argv.includes("go") && argv.includes("test") && argv.includes("-json"),
+  },
+  {
+    parserId: "ava-text",
+    detect: (argv) => argv.includes("ava"),
   },
 ];
 

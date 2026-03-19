@@ -18,21 +18,34 @@ Tool output is designed for humans: source diffs, line annotations, timing break
 
 | Parser | Raw (tokens) | Structured (tokens) | Reduction | Notes |
 |---|---|---|---|---|
+| `go-test-json` | 1819 | 48 | **97%** | NDJSON event stream with stack traces; file:line + expected/actual preserved |
 | `junit-xml` (maven) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
+| `ava-text` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
 | `junit-xml` (go) | 400 | 58 | **86%** | verbose output with full stack trace per failure |
 | `junit-xml` (dotnet) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
 | `vitest-json` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| `unittest-text` | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
 | `cargo-test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
 | `junit-xml` (pytest) | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | `rspec-json` | 212 | 55 | **74%** | default output with backtrace |
 | `junit-xml` (gradle) | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
+| `mocha-json` | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
 | `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
 | `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
+| `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
+| `shellcheck-json` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
+| `rubocop-json` | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
+| `tsc-text` | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
+| `stylelint-json` | 70 | 51 | **27%** | strips summary footer and fix hint |
+| `pylint-json` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
+| `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
+| `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
+| `flake8` | 75 | — | **—** | already compact (`file:line:col: CODE message`); no parser — use `bash` directly |
 
-Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files.
+Tokens counted with `cl100k_base` (tiktoken). Linter output is more compact than test runner output to begin with, so the baseline reduction is lower. The numbers above are measured against a single file with a single error — a conservative lower bound. Both ruff and eslint repeat absolute file paths per error in their raw output, so reduction grows as violations spread across more files. mypy's 4% on a 2-error fixture is the floor — reduction scales with error count as the parser strips repeated `: error:` prefixes and summary lines. tsc's 33% is measured against the default `--pretty true` output — the parser forces `--pretty false` to strip source snippets, ANSI codes, and underline indicators.
 
 ### Pipeline tools
 
@@ -63,6 +76,18 @@ At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 →
 - `cargo-test` (`cargo test` — assertion left/right values, panic messages, and file:line per failure; detects compilation failures and directs to `cargo build --message-format=json`)
 - `ruff-json` (`ruff check` only — `ruff format` has no json support)
 - `eslint-json`
+- `mypy-json` (`mypy --output json` — NDJSON on stderr; type errors with file, line, message, error code; notes folded into parent errors)
+- `tsc-text` (`tsc --noEmit --pretty false` — parses compact `file(line,col): error TSXXXX: message` format; strips source snippets and ANSI codes)
+- `pylint-json` (`pylint --output-format=json` — lint errors with file, line, message, message-id and symbol name)
+- `shellcheck-json` (`shellcheck --format=json` — shell script lint errors with file, line, message, SC code; source snippets and suggestions stripped)
+- `rubocop-json` (`rubocop --format json` — Ruby lint errors with file, line, message, cop name; source snippets stripped)
+- `swiftc-text` (`swiftc -typecheck` — Swift compiler errors from stderr; source annotations deduplicated)
+- `hadolint-json` (`hadolint --format json` — Dockerfile lint errors with file, line, message, DL/SC code)
+- `stylelint-json` (`stylelint --formatter json` — CSS lint errors with file, line, message, rule name)
+- `ava-text` (`npx ava --no-color` — parses default text output from stderr; assertion diffs and stack traces stripped to file:line + expected/actual)
+- `mocha-json` (`mocha --reporter json` — assertion failures with explicit expected/actual; runtime errors with message and file:line from stack trace)
+- `unittest-text` (`python3 -m unittest` — parses verbose traceback output from stderr; expected/actual from AssertionError; file:line from traceback)
+- `go-test-json` (`go test -json` — NDJSON event stream; assertion messages and panic stack traces parsed to file:line + message; 97% reduction)
 
 
 ## Before / after

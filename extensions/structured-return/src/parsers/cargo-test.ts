@@ -1,6 +1,6 @@
-import fs from "node:fs";
 import path from "node:path";
 import type { ParserModule, ParsedFailure } from "../types";
+import { safeReadFile } from "./utils";
 
 // Rust 1.73+: thread 'name' (optional-id) panicked at file:line:col:
 //             message on following line(s)
@@ -21,7 +21,7 @@ const parser: ParserModule = {
   async parse(ctx) {
     // Use combined log — test binary output goes to stdout, cargo progress to stderr;
     // reading both ensures we catch everything regardless of buffering order.
-    const log = fs.readFileSync(ctx.logPath, "utf8");
+    const log = safeReadFile(ctx.logPath);
     const lines = log.split("\n").map((l) => l.trim());
 
     // If compilation failed there will be no "test result:" line

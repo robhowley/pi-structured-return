@@ -1,5 +1,5 @@
-import fs from "node:fs";
 import type { ParserModule, ParsedFailure } from "../types";
+import { safeReadFile } from "./utils";
 
 interface DbtEvent {
   data: Record<string, unknown>;
@@ -29,7 +29,7 @@ const parser: ParserModule = {
   id: "dbt-json",
   async parse(ctx) {
     // dbt --log-format json writes JSONL to stdout
-    const raw = fs.readFileSync(ctx.stdoutPath, "utf8");
+    const raw = safeReadFile(ctx.stdoutPath);
     const events: DbtEvent[] = [];
     for (const line of raw.split("\n")) {
       if (!line.trim().startsWith("{")) continue;

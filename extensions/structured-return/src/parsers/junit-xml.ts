@@ -1,7 +1,7 @@
-import fs from "node:fs";
 import path from "node:path";
 import { XMLParser } from "fast-xml-parser";
 import type { ParserModule, ParsedFailure } from "../types";
+import { safeReadFile } from "./utils";
 
 interface JUnitFailureOrError {
   message?: string;
@@ -148,7 +148,7 @@ const parser: ParserModule = {
   id: "junit-xml",
   async parse(ctx) {
     const artifactPath = ctx.artifactPaths[0] ?? ctx.stdoutPath;
-    const xml = fs.readFileSync(artifactPath, "utf8");
+    const xml = safeReadFile(artifactPath);
     const doc = xmlParser.parse(xml) as JUnitDocument;
 
     const suites: JUnitTestSuite[] = doc.testsuites?.testsuite ?? doc.testsuite ?? [];
