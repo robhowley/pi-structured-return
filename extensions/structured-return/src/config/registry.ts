@@ -21,6 +21,7 @@ import mochaJson from "../parsers/mocha-json";
 import unittestText from "../parsers/unittest-text";
 import goTestJson from "../parsers/go-test-json";
 import avaText from "../parsers/ava-text";
+import pyrightJson from "../parsers/pyright-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -45,6 +46,7 @@ const builtIns: Record<string, ParserModule> = {
   "unittest-text": unittestText,
   "go-test-json": goTestJson,
   "ava-text": avaText,
+  "pyright-json": pyrightJson,
   "tail-fallback": tailFallback,
 };
 
@@ -146,6 +148,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "ava-text",
     detect: (argv) => argv.includes("ava"),
+  },
+  {
+    parserId: "pyright-json",
+    detect: (argv) => argv.includes("pyright") && argv.includes("--outputjson"),
   },
 ];
 

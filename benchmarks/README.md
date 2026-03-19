@@ -344,6 +344,16 @@ stylelint linters/stylelint/lint_check.css
 structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
 ```
 
+### pyright
+
+```bash
+# raw
+pyright linters/pyright/type_check.py
+
+# structured
+structured_return({ command: "pyright --outputjson linters/pyright/type_check.py", parseAs: "pyright-json" })
+```
+
 ### swiftc
 
 ```bash
