@@ -32,6 +32,7 @@ import markdownlintJson from "../parsers/markdownlint-json";
 import prettierText from "../parsers/prettier-text";
 import valeJson from "../parsers/vale-json";
 import tidyText from "../parsers/tidy-text";
+import jsonlintText from "../parsers/jsonlint-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -67,6 +68,7 @@ const builtIns: Record<string, ParserModule> = {
   "prettier-text": prettierText,
   "vale-json": valeJson,
   "tidy-text": tidyText,
+  "jsonlint-text": jsonlintText,
   "tail-fallback": tailFallback,
 };
 
@@ -204,6 +206,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "tidy-text",
     detect: (argv) => argv.includes("tidy"),
+  },
+  {
+    parserId: "jsonlint-text",
+    detect: (argv) => argv.includes("jsonlint"),
   },
   {
     parserId: "vale-json",

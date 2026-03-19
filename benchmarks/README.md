@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### jsonlint
+
+```bash
+# raw
+npx jsonlint linters/jsonlint/check.json
+
+# structured
+structured_return({ command: "npx jsonlint linters/jsonlint/check.json", parseAs: "jsonlint-text" })
+```
+
 ### tidy
 
 ```bash
