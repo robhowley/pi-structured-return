@@ -1,5 +1,0 @@
-/Users/roberthowley/src/github.com/pi-structured-return/benchmarks/linters/dotnet-build/obj/Debug/net10.0/BuildCheck.GeneratedMSBuildEditorConfig.editorconfig
-/Users/roberthowley/src/github.com/pi-structured-return/benchmarks/linters/dotnet-build/obj/Debug/net10.0/BuildCheck.AssemblyInfoInputs.cache
-/Users/roberthowley/src/github.com/pi-structured-return/benchmarks/linters/dotnet-build/obj/Debug/net10.0/BuildCheck.AssemblyInfo.cs
-/Users/roberthowley/src/github.com/pi-structured-return/benchmarks/linters/dotnet-build/obj/Debug/net10.0/BuildCheck.csproj.CoreCompileInputs.cache
-/Users/roberthowley/src/github.com/pi-structured-return/benchmarks/linters/dotnet-build/obj/Debug/net10.0/BuildCheck.sourcelink.json
