@@ -18,7 +18,7 @@ interface HtmlHintFile {
 const parser: ParserModule = {
   id: "htmlhint-json",
   async parse(ctx) {
-    // htmlhint --format json writes to stderr
+    // htmlhint --format json writes JSON to stderr (not stdout), so read stderr first.
     const output = (safeReadFile(ctx.stderrPath) + safeReadFile(ctx.stdoutPath)).trim();
     if (!output) {
       return {

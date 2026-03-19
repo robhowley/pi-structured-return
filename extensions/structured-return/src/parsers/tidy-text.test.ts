@@ -38,7 +38,7 @@ see http://www.w3.org/WAI/GL.
 
 To learn more about HTML Tidy see http://tidy.sourceforge.net`;
     const result = await parser.parse(makeCtx(stderr));
-    expect(result.status).toBe("fail");
+    expect(result.status).toBe("pass");
     expect(result.summary).toBe("3 warnings");
     expect(result.failures).toHaveLength(3);
     expect(result.failures![0].file).toBe("src/index.html");

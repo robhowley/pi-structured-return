@@ -45,9 +45,11 @@ const parser: ParserModule = {
 
     const n = failures.length;
     const summary =
-      n > 0
-        ? `${n} file${n !== 1 ? "s" : ""} ha${n !== 1 ? "ve" : "s"} incorrectly sorted imports`
-        : "all imports sorted";
+      n === 0
+        ? "all imports sorted"
+        : n === 1
+          ? "1 file has incorrectly sorted imports"
+          : `${n} files have incorrectly sorted imports`;
 
     return {
       tool: "isort",

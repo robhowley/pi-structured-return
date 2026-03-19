@@ -25,8 +25,9 @@ const parser: ParserModule = {
     let warnings = 0;
     let errors = 0;
 
-    // Derive filename from command argv — tidy doesn't include it in output
-    const file = ctx.argv.find((a) => !a.startsWith("-") && a !== "tidy") ?? "input";
+    // Derive filename from command argv — tidy doesn't include filenames in output.
+    // Use last non-flag arg since flags like `-indent auto` have value arguments.
+    const file = ctx.argv.filter((a) => !a.startsWith("-") && a !== "tidy").pop() ?? "input";
 
     for (const line of lines) {
       const issueMatch = line.match(ISSUE_LINE);
@@ -55,7 +56,7 @@ const parser: ParserModule = {
 
     return {
       tool: "tidy",
-      status: errors > 0 ? "fail" : warnings > 0 ? "fail" : "pass",
+      status: errors > 0 ? "fail" : "pass",
       summary,
       failures,
       logPath: ctx.logPath,

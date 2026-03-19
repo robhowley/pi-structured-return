@@ -20,8 +20,9 @@ const parser: ParserModule = {
       };
     }
 
-    // Derive filename from argv
-    const file = ctx.argv.find((a) => !a.startsWith("-") && a !== "jsonlint" && a !== "npx") ?? "input";
+    // Derive filename from argv — use last non-flag arg since earlier positional
+    // args may be flag values (e.g. npx --yes jsonlint file.json).
+    const file = ctx.argv.filter((a) => !a.startsWith("-") && a !== "jsonlint" && a !== "npx").pop() ?? "input";
 
     const lines = combined.split("\n");
     const failures: ParsedFailure[] = [];
