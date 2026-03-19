@@ -36,6 +36,9 @@ Prefer better output at the source.
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
+### npm audit
+- `structured_return({ command: "npm audit --json", parseAs: "npm-audit-json" })` — `--json` is built into npm; strips advisory URLs, CVSS vectors, fix instructions; advisory titles joined per package; severity breakdown in summary
+
 ### jsonlint
 - `structured_return({ command: "npx jsonlint [file]", parseAs: "jsonlint-text" })` — strips stack trace and source pointer; extracts line number and "Expecting X, got Y" message
 

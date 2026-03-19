@@ -386,6 +386,22 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### npm audit
+
+Setup (run once from `linters/npm-audit/`):
+
+```bash
+cd linters/npm-audit && npm install
+```
+
+```bash
+# raw
+npm audit
+
+# structured
+structured_return({ command: "npm audit --json", parseAs: "npm-audit-json" })
+```
+
 ### jsonlint
 
 ```bash
