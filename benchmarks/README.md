@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### prettier
+
+```bash
+# raw
+prettier --check linters/prettier/format_check.ts
+
+# structured
+structured_return({ command: "prettier --check linters/prettier/format_check.ts", parseAs: "prettier-text" })
+```
+
 ### markdownlint
 
 ```bash

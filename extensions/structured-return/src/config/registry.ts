@@ -29,6 +29,7 @@ import clangText from "../parsers/clang-text";
 import nodeTestText from "../parsers/node-test-text";
 import blackText from "../parsers/black-text";
 import markdownlintJson from "../parsers/markdownlint-json";
+import prettierText from "../parsers/prettier-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -61,6 +62,7 @@ const builtIns: Record<string, ParserModule> = {
   "node-test-text": nodeTestText,
   "black-text": blackText,
   "markdownlint-json": markdownlintJson,
+  "prettier-text": prettierText,
   "tail-fallback": tailFallback,
 };
 
@@ -190,6 +192,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "markdownlint-json",
     detect: (argv) => argv.includes("markdownlint") && argv.includes("--json"),
+  },
+  {
+    parserId: "prettier-text",
+    detect: (argv) => argv.includes("prettier") && argv.includes("--check"),
   },
   {
     parserId: "clang-text",
