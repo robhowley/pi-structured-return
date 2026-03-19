@@ -1,0 +1,98 @@
+15:42:01  Running with dbt=1.8.4
+15:42:01  Registered adapter: bigquery=1.8.2
+15:42:01  Found 2847 models, 1423 sources, 892 tests, 34 seeds, 156 snapshots, 12 analyses, 1247 macros
+15:42:01  
+15:42:03  Concurrency: 8 threads (target='dev')
+15:42:03  
+15:42:03  Compiled node 'mart__core__customer_engagement' is:
+WITH user_events AS (
+    SELECT
+        customer_id,
+        event_type,
+        event_timestamp,
+        platform,
+        session_id,
+        ROW_NUMBER() OVER (
+            PARTITION BY customer_id
+            ORDER BY event_timestamp DESC
+        ) AS event_rank
+    FROM `analytics-warehouse`.`dev_schema`.`int__core__customer_events`
+    WHERE DATE(event_timestamp) >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+),
+
+session_metrics AS (
+    SELECT
+        customer_id,
+        COUNT(DISTINCT session_id) AS total_sessions,
+        COUNT(*) AS total_events,
+        MIN(event_timestamp) AS first_event_at,
+        MAX(event_timestamp) AS last_event_at,
+        COUNTIF(event_type = 'purchase') AS purchase_count,
+        COUNTIF(event_type = 'search') AS search_count,
+        COUNTIF(event_type = 'product_view') AS product_view_count
+    FROM user_events
+    GROUP BY customer_id
+),
+
+engagement_scores AS (
+    SELECT
+        customer_id,
+        total_sessions,
+        total_events,
+        first_event_at,
+        last_event_at,
+        purchase_count,
+        search_count,
+        product_view_count,
+        (
+            total_sessions * 10.0
+            + purchase_count * 25.0
+            + search_count * 5.0
+            + product_view_count * 3.0
+        ) / NULLIF(DATE_DIFF(last_event_at, first_event_at, DAY), 0) AS engagement_score
+    FROM session_metrics
+)
+
+SELECT
+    customer_id,
+    total_sessions,
+    total_events,
+    first_event_at,
+    last_event_at,
+    purchase_count,
+    search_count,
+    product_view_count,
+    engagement_score,
+    CASE
+        WHEN engagement_score >= 50.0 THEN 'highly_engaged'
+        WHEN engagement_score >= 20.0 THEN 'moderately_engaged'
+        WHEN engagement_score >= 5.0 THEN 'lightly_engaged'
+        ELSE 'dormant'
+    END AS engagement_tier,
+    engagement_score IS NOT NULL AS is_active,
+    CURRENT_TIMESTAMP() AS _loaded_at
+FROM engagement_scores
+
+15:42:03  Compiled node 'mart__core__daily_active_customers' is:
+SELECT
+    DATE(event_timestamp) AS activity_date,
+    customer_id,
+    COUNT(*) AS event_count,
+    COUNT(DISTINCT session_id) AS session_count,
+    MAX(event_timestamp) AS last_active_at
+FROM `analytics-warehouse`.`dev_schema`.`int__core__customer_events`
+WHERE DATE(event_timestamp) >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+GROUP BY 1, 2
+HAVING event_count >= 1
+
+15:42:04  Compiled node 'mart__core__daily_summary' is:
+SELECT
+    activity_date,
+    COUNT(DISTINCT customer_id) AS active_customers,
+    SUM(event_count) AS total_events,
+    SUM(session_count) AS total_sessions,
+    AVG(event_count) AS avg_events_per_customer,
+    CURRENT_TIMESTAMP() AS _loaded_at
+FROM `analytics-warehouse`.`dev_schema`.`mart__core__daily_active_customers`
+GROUP BY 1
+ORDER BY 1 DESC

@@ -203,3 +203,38 @@ npx eslint --config linters/eslint.config.mjs linters/lint_check.ts
 # structured
 structured_return({ command: "npx eslint --config linters/eslint.config.mjs linters/lint_check.ts -f json", parseAs: "eslint-json" })
 ```
+
+## Pipeline tools
+
+No live dbt project needed — benchmarks use saved plain text (raw) and JSONL (structured) sample output in `pipeline-tools/dbt/`.
+
+### dbt run
+
+```bash
+# raw (plain text samples)
+cat pipeline-tools/dbt/dbt-run-success.log          # 3-model success
+cat pipeline-tools/dbt/dbt-run-failure.log           # 2 errors, 1 skip
+
+# structured (JSONL fed to parser)
+structured_return({ command: "dbt run --log-format json", parseAs: "dbt-json" })
+```
+
+### dbt test
+
+```bash
+# raw
+cat pipeline-tools/dbt/dbt-test-failure.log          # 2 fail, 1 unit test diff
+
+# structured
+structured_return({ command: "dbt test --log-format json", parseAs: "dbt-json" })
+```
+
+### dbt compile
+
+```bash
+# raw
+cat pipeline-tools/dbt/dbt-compile.log               # 3 models compiled to SQL
+
+# structured
+structured_return({ command: "dbt compile -s model_name --log-format json", parseAs: "dbt-json" })
+```

@@ -1,0 +1,27 @@
+15:42:01  Running with dbt=1.8.4
+15:42:01  Registered adapter: bigquery=1.8.2
+15:42:01  Found 2847 models, 1423 sources, 892 tests, 34 seeds, 156 snapshots, 12 analyses, 1247 macros
+15:42:01  
+15:42:03  Concurrency: 8 threads (target='dev')
+15:42:03  
+15:42:03  1 of 4 START sql incremental model mart.mart__core__customer_engagement ............ [RUN]
+15:42:03  2 of 4 START sql table model mart.mart__core__daily_active_customers ............... [RUN]
+15:42:03  3 of 4 START sql table model mart.mart__core__daily_summary ....................... [RUN]
+15:42:18  1 of 4 OK created sql incremental model mart.mart__core__customer_engagement ....... [MERGE 124.5k rows, 2.3 GiB processed in 15.22s]
+15:42:35  2 of 4 ERROR creating sql table model mart.mart__core__daily_active_customers ...... [ERROR in 32.11s]
+15:42:36  3 of 4 ERROR creating sql table model mart.mart__core__daily_summary .............. [ERROR in 33.02s]
+15:42:36  4 of 4 SKIP sql table model mart.mart__core__weekly_retention ..................... [SKIP]
+15:42:36  
+15:42:36  Finished running 1 incremental model, 3 table models in 0 hours 0 minutes and 34.22 seconds (34.22s).
+15:42:36  
+15:42:36  Completed with 2 errors and 0 warnings:
+15:42:36  
+15:42:36  Database Error in model mart__core__daily_active_customers (models/mart/core/mart__core__daily_active_customers.sql)
+15:42:36    Column customer_id in USING clause not found on left side of join at [42:15]
+15:42:36    compiled code at target/compiled/analytics/models/mart/core/mart__core__daily_active_customers.sql
+15:42:36  
+15:42:36  Runtime Error in model mart__core__daily_summary (models/mart/core/mart__core__daily_summary.sql)
+15:42:36    Access Denied: Table analytics-warehouse.prod_dataset.customers: User does not have permission to query table
+15:42:36    compiled code at target/compiled/analytics/models/mart/core/mart__core__daily_summary.sql
+15:42:36  
+15:42:36  Done. PASS=1 WARN=0 ERROR=2 SKIP=1 TOTAL=4

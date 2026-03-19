@@ -1,0 +1,36 @@
+15:42:01  Running with dbt=1.8.4
+15:42:01  Registered adapter: bigquery=1.8.2
+15:42:01  Found 2847 models, 1423 sources, 892 tests, 34 seeds, 156 snapshots, 12 analyses, 1247 macros
+15:42:01  
+15:42:03  Concurrency: 8 threads (target='dev')
+15:42:03  
+15:42:03  1 of 3 START test not_null_mart__core__customer_engagement_customer_id ................. [RUN]
+15:42:03  2 of 3 START test unique_mart__core__customer_engagement_customer_id ................... [RUN]
+15:42:03  3 of 3 START test dbt_unit_test_mart__core__customer_engagement__test_new_user_engagement [RUN]
+15:42:08  1 of 3 PASS not_null_mart__core__customer_engagement_customer_id ....................... [PASS in 4.89s]
+15:42:09  2 of 3 FAIL 3 unique_mart__core__customer_engagement_customer_id ....................... [FAIL 3 in 5.52s]
+15:42:13  3 of 3 FAIL dbt_unit_test_mart__core__customer_engagement__test_new_user_engagement  [FAIL in 9.23s]
+15:42:13  
+15:42:13  Finished running 3 data tests in 0 hours 0 minutes and 12.08 seconds (12.08s).
+15:42:13  
+15:42:13  Completed with 2 errors and 0 warnings:
+15:42:13  
+15:42:13  Failure in test unique_mart__core__customer_engagement_customer_id (models/mart/core/_core__models.yml)
+15:42:13    Got 3 results, configured to fail if != 0
+15:42:13  
+15:42:13    compiled code at target/compiled/analytics/models/mart/core/unique_mart__core__customer_engagement_customer_id.sql
+15:42:13  
+15:42:13  Failure in test dbt_unit_test_mart__core__customer_engagement__test_new_user_engagement (models/mart/core/_core__models.yml)
+15:42:13  
+15:42:13    actual differs from expected:
+15:42:13  
+15:42:13    |   | customer_id | engagement_score | is_active |
+15:42:13    | - | ------- | ---------------- | --------- |
+15:42:13    | + | 101     | 85.5             | True      |
+15:42:13    | - | 101     | 90.0             | True      |
+15:42:13    | + | 102     | NULL             | False     |
+15:42:13    | - | 102     | 0.0              | False     |
+15:42:13  
+15:42:13    compiled code at target/compiled/analytics/models/mart/core/dbt_unit_test_mart__core__customer_engagement__test_new_user_engagement.sql
+15:42:13  
+15:42:13  Done. PASS=1 WARN=0 ERROR=2 SKIP=0 TOTAL=3

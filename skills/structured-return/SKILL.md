@@ -45,6 +45,11 @@ Prefer better output at the source.
 ### minitest
 - `structured_return({ command: "ruby [any minitest args]", parseAs: "minitest-text" })` — no format flags needed; works with plain ruby invocation
 
+### dbt (run, test, compile)
+- `structured_return({ command: "dbt run [any dbt args] --log-format json", parseAs: "dbt-json" })` — `--log-format json` required; model selectors, flags, etc. go in `[any dbt args]`
+- `structured_return({ command: "dbt test [any dbt args] --log-format json", parseAs: "dbt-json" })` — same parser handles run and test; unit test diffs preserved verbatim
+- `structured_return({ command: "dbt compile [any dbt args] --log-format json", parseAs: "dbt-json" })` — returns compiled SQL; preamble stripped
+
 ### cargo build
 - `structured_return({ command: "cargo build --message-format=json", parseAs: "cargo-build" })` — `--message-format=json` is built into cargo; errors include file, line, error code (E0308 etc.), and primary span label (expected X, found Y); warnings are filtered out
 
