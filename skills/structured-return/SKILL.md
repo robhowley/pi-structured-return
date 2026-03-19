@@ -39,6 +39,9 @@ Prefer better output at the source.
 ### bandit
 - `structured_return({ command: "bandit -f json [any bandit args]", parseAs: "bandit-json" })` — `-f json` is built into bandit; strips source snippets, CWE URLs, run metrics, and confidence labels; severity breakdown in summary
 
+### dotnet build
+- `structured_return({ command: "dotnet build [any dotnet args]", parseAs: "dotnet-build-text" })` — parses MSBuild `file(line,col): error CODE: message` format; strips restore/timing noise; deduplicates the inline+summary error repetition; absolute paths relativized
+
 ### javac
 - `structured_return({ command: "javac [any javac args]", parseAs: "javac-text" })` — parses `file:line: error: message` from stderr; source snippets and caret indicators stripped; `cannot find symbol` errors fold the symbol continuation line into the message
 

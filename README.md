@@ -79,6 +79,7 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 
 | Parser | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
+| `dotnet-build-text` | 383 | 53 | **86%** | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
 | `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
 | `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
@@ -116,7 +117,7 @@ At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 →
 
 **Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `bandit-json`
 
-**Build tools:** `cargo-build`, `javac-text`
+**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`
 
 **Pipeline tools:** `dbt-json` (run, test, compile)
 

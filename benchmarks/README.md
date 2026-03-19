@@ -344,6 +344,18 @@ stylelint linters/stylelint/lint_check.css
 structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
 ```
 
+### dotnet build
+
+Run from `linters/dotnet-build/`:
+
+```bash
+# raw
+dotnet build
+
+# structured
+structured_return({ command: "dotnet build", parseAs: "dotnet-build-text" })
+```
+
 ### javac
 
 ```bash

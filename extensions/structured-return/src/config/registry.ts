@@ -24,6 +24,7 @@ import avaText from "../parsers/ava-text";
 import pyrightJson from "../parsers/pyright-json";
 import banditJson from "../parsers/bandit-json";
 import javacText from "../parsers/javac-text";
+import dotnetBuildText from "../parsers/dotnet-build-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -51,6 +52,7 @@ const builtIns: Record<string, ParserModule> = {
   "pyright-json": pyrightJson,
   "bandit-json": banditJson,
   "javac-text": javacText,
+  "dotnet-build-text": dotnetBuildText,
   "tail-fallback": tailFallback,
 };
 
@@ -164,6 +166,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "javac-text",
     detect: (argv) => argv.includes("javac") && !argv.includes("-version"),
+  },
+  {
+    parserId: "dotnet-build-text",
+    detect: (argv) => argv.includes("dotnet") && argv.includes("build"),
   },
 ];
 
