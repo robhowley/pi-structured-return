@@ -130,7 +130,7 @@ pi install npm:@robhowley/pi-structured-return
 
 ## How it works
 
-1. The agent runs commands through `structured_return` instead of `bash` when it would reduce noise and token usage.
+1. The agent runs commands through `structured_return` when it would reduce noise and token usage.
 2. Full output is captured and stored as a log.
 3. A parser converts noisy CLI output into a compact structured result. If no parser matches, the last 200 lines and the log path are returned as a fallback.
 4. The agent receives the structured result in context — signal only, no noise.
