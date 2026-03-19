@@ -92,6 +92,7 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 | `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
 | `bandit-json` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
+| `markdownlint-json` | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
 | `pyright-json` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
 | `clang-text` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
 | `javac-text` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
@@ -118,7 +119,7 @@ At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 →
 
 **Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`, `node-test-text`
 
-**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `bandit-json`, `black-text`
+**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `bandit-json`, `black-text`, `markdownlint-json`
 
 **Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`, `clang-text`
 

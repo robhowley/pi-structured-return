@@ -36,6 +36,9 @@ Prefer better output at the source.
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
+### markdownlint
+- `structured_return({ command: "markdownlint --json [any markdownlint args]", parseAs: "markdownlint-json" })` — `--json` outputs structured array; strips context quotes, rule info URLs, fix info, and error ranges; error details folded into description
+
 ### black
 - `structured_return({ command: "black --check [any black args]", parseAs: "black-text" })` — parses `--check` output; strips diff hunks, emoji banners, timestamps; lists files needing reformatting; also handles `--check --diff` mode
 

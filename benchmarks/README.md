@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### markdownlint
+
+```bash
+# raw
+markdownlint linters/markdownlint/lint_check.md
+
+# structured
+structured_return({ command: "markdownlint --json linters/markdownlint/lint_check.md", parseAs: "markdownlint-json" })
+```
+
 ### black
 
 ```bash

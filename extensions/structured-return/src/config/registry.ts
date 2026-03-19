@@ -28,6 +28,7 @@ import dotnetBuildText from "../parsers/dotnet-build-text";
 import clangText from "../parsers/clang-text";
 import nodeTestText from "../parsers/node-test-text";
 import blackText from "../parsers/black-text";
+import markdownlintJson from "../parsers/markdownlint-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -59,6 +60,7 @@ const builtIns: Record<string, ParserModule> = {
   "clang-text": clangText,
   "node-test-text": nodeTestText,
   "black-text": blackText,
+  "markdownlint-json": markdownlintJson,
   "tail-fallback": tailFallback,
 };
 
@@ -184,6 +186,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "black-text",
     detect: (argv) => argv.includes("black") && argv.includes("--check"),
+  },
+  {
+    parserId: "markdownlint-json",
+    detect: (argv) => argv.includes("markdownlint") && argv.includes("--json"),
   },
   {
     parserId: "clang-text",
