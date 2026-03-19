@@ -27,6 +27,7 @@ import javacText from "../parsers/javac-text";
 import dotnetBuildText from "../parsers/dotnet-build-text";
 import clangText from "../parsers/clang-text";
 import nodeTestText from "../parsers/node-test-text";
+import blackText from "../parsers/black-text";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -57,6 +58,7 @@ const builtIns: Record<string, ParserModule> = {
   "dotnet-build-text": dotnetBuildText,
   "clang-text": clangText,
   "node-test-text": nodeTestText,
+  "black-text": blackText,
   "tail-fallback": tailFallback,
 };
 
@@ -178,6 +180,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "node-test-text",
     detect: (argv) => argv.includes("node") && argv.includes("--test"),
+  },
+  {
+    parserId: "black-text",
+    detect: (argv) => argv.includes("black") && argv.includes("--check"),
   },
   {
     parserId: "clang-text",

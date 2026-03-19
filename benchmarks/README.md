@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### black
+
+```bash
+# raw
+black --check --diff linters/black/format_check.py
+
+# structured
+structured_return({ command: "black --check linters/black/format_check.py", parseAs: "black-text" })
+```
+
 ### bandit
 
 ```bash
