@@ -36,6 +36,9 @@ Prefer better output at the source.
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
+### tidy (HTML Tidy)
+- `structured_return({ command: "tidy -errors [any tidy args]", parseAs: "tidy-text" })` — parses `line N column N - Warning/Error: message` from stderr; strips remediation advice, accessibility tips, reformatted HTML output, and Info lines
+
 ### vale
 - `structured_return({ command: "vale --output JSON [any vale args]", parseAs: "vale-json" })` — `--output JSON` is built into vale; strips ANSI codes, Action/Span metadata, column-aligned formatting; severity breakdown in summary
 

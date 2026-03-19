@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### tidy
+
+```bash
+# raw
+tidy -errors linters/tidy/check.html
+
+# structured
+structured_return({ command: "tidy -errors linters/tidy/check.html", parseAs: "tidy-text" })
+```
+
 ### vale
 
 Setup (install once, create `.vale.ini` config):
