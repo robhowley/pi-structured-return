@@ -50,7 +50,7 @@ const parser: ParserModule = {
     }
 
     const failures: ParsedFailure[] = report.failures.map((test) => {
-      const loc = test.err.stack ? extractJsStackLocation(test.err.stack) : {};
+      const loc = extractJsStackLocation(test.err.stack);
       const relFile = loc.file ? path.relative(ctx.cwd, path.resolve(ctx.cwd, loc.file)) : undefined;
       return {
         id: test.fullTitle,

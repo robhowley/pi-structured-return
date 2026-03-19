@@ -21,7 +21,8 @@ export function safeReadFile(filePath: string): string {
  *   at functionName (file.ts:10:5)
  *   at file.ts:10:5
  */
-export function extractJsStackLocation(stack: string): { file?: string; line?: number } {
+export function extractJsStackLocation(stack: string | undefined): { file?: string; line?: number } {
+  if (!stack) return {};
   for (const line of stack.split("\n")) {
     // "at name (file:line:col)"
     const withParens = line.match(/at\s+\S+\s+\(([^)]+\.(?:[jt]sx?|mjs|cjs)):(\d+):\d+\)/);
