@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### isort
+
+```bash
+# raw
+isort --check --diff linters/isort/import_check.py
+
+# structured
+structured_return({ command: "isort --check --diff linters/isort/import_check.py", parseAs: "isort-text" })
+```
+
 ### npm audit
 
 Setup (run once from `linters/npm-audit/`):

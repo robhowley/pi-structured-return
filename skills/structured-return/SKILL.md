@@ -36,6 +36,9 @@ Prefer better output at the source.
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
+### isort
+- `structured_return({ command: "isort --check --diff [any isort args]", parseAs: "isort-text" })` — parses `--check` output; strips diff hunks, absolute paths, timestamps; lists files with unsorted imports
+
 ### npm audit
 - `structured_return({ command: "npm audit --json", parseAs: "npm-audit-json" })` — `--json` is built into npm; strips advisory URLs, CVSS vectors, fix instructions; advisory titles joined per package; severity breakdown in summary
 
