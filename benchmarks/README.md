@@ -344,6 +344,16 @@ stylelint linters/stylelint/lint_check.css
 structured_return({ command: "stylelint --formatter json linters/stylelint/lint_check.css", parseAs: "stylelint-json" })
 ```
 
+### bandit
+
+```bash
+# raw
+bandit linters/bandit/security_check.py
+
+# structured
+structured_return({ command: "bandit -f json linters/bandit/security_check.py", parseAs: "bandit-json" })
+```
+
 ### pyright
 
 ```bash

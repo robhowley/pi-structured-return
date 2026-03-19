@@ -36,6 +36,9 @@ Prefer better output at the source.
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
+### bandit
+- `structured_return({ command: "bandit -f json [any bandit args]", parseAs: "bandit-json" })` — `-f json` is built into bandit; strips source snippets, CWE URLs, run metrics, and confidence labels; severity breakdown in summary
+
 ### pyright
 - `structured_return({ command: "pyright --outputjson [any pyright args]", parseAs: "pyright-json" })` — `--outputjson` is built into pyright; JSON output includes file, line, message, and rule code; multi-line detail messages collapsed; warnings excluded from failures
 
