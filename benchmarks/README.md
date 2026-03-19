@@ -386,6 +386,16 @@ javac linters/javac/TypeCheck.java
 structured_return({ command: "javac linters/javac/TypeCheck.java", parseAs: "javac-text" })
 ```
 
+### htmlhint
+
+```bash
+# raw
+npx htmlhint linters/htmlhint/check.html
+
+# structured
+structured_return({ command: "npx htmlhint --format json linters/htmlhint/check.html", parseAs: "htmlhint-json" })
+```
+
 ### isort
 
 ```bash

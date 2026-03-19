@@ -36,6 +36,9 @@ Prefer better output at the source.
 ### mypy
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
+### htmlhint
+- `structured_return({ command: "npx htmlhint --format json [any htmlhint args]", parseAs: "htmlhint-json" })` — `--format json` outputs structured array; strips ANSI codes, source evidence, rule descriptions, and URLs
+
 ### isort
 - `structured_return({ command: "isort --check --diff [any isort args]", parseAs: "isort-text" })` — parses `--check` output; strips diff hunks, absolute paths, timestamps; lists files with unsorted imports
 
@@ -89,6 +92,24 @@ Prefer better output at the source.
 
 ### flake8
 - `flake8 [any flake8 args]` (no structured_return — default output is already compact `file:line:col: CODE message`; no JSON without a plugin; use `bash` directly)
+
+### yamllint
+- `yamllint [any yamllint args]` (no structured_return — default output is already compact `file:line:col: level message (rule)`; use `bash` directly)
+
+### pydocstyle
+- `pydocstyle [any pydocstyle args]` (no structured_return — default output is already compact `file:line context + CODE: message`; use `bash` directly)
+
+### vulture
+- `vulture [any vulture args]` (no structured_return — default output is already compact `file:line: message (confidence%)`; use `bash` directly)
+
+### golangci-lint
+- `golangci-lint run [any golangci-lint args]` (no structured_return — text output is already compact `file:line:col: message (linter)`; use `bash` directly)
+
+### go build
+- `go build [any go build args]` (no structured_return — error output is already compact `file:line:col: message`; use `bash` directly)
+
+### go vet
+- `go vet [any go vet args]` (no structured_return — output is already compact `file:line:col: message`; use `bash` directly)
 
 ### swiftc
 - `structured_return({ command: "swiftc -typecheck [any swiftc args]", parseAs: "swiftc-text" })` — parses `file:line:col: error: message` from stderr; source annotations and duplicate error lines deduplicated; warnings filtered out

@@ -35,6 +35,7 @@ import tidyText from "../parsers/tidy-text";
 import jsonlintText from "../parsers/jsonlint-text";
 import npmAuditJson from "../parsers/npm-audit-json";
 import isortText from "../parsers/isort-text";
+import htmlhintJson from "../parsers/htmlhint-json";
 import tailFallback from "../parsers/tail-fallback";
 
 const builtIns: Record<string, ParserModule> = {
@@ -73,6 +74,7 @@ const builtIns: Record<string, ParserModule> = {
   "jsonlint-text": jsonlintText,
   "npm-audit-json": npmAuditJson,
   "isort-text": isortText,
+  "htmlhint-json": htmlhintJson,
   "tail-fallback": tailFallback,
 };
 
@@ -214,6 +216,10 @@ const AUTO_DETECT: Array<{ parserId: string; detect: (argv: string[]) => boolean
   {
     parserId: "jsonlint-text",
     detect: (argv) => argv.includes("jsonlint"),
+  },
+  {
+    parserId: "htmlhint-json",
+    detect: (argv) => argv.includes("htmlhint") && hasFlag(argv, "--format", "json"),
   },
   {
     parserId: "isort-text",
