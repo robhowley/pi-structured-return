@@ -9,6 +9,7 @@ import { ensureRunDir, writeRunArtifacts } from "./storage/log-store";
 import { loadProjectConfig } from "./config/project-config";
 import { resolveParser, listParsers } from "./config/registry";
 import { safeReadFile } from "./parsers/utils";
+import { appendRun, readLifetimeStats, formatStatsBlock, type AggregatedStats } from "./storage/session-stats";
 
 export default function structuredReturn(pi: ExtensionAPI) {
   pi.registerCommand("sr-parsers", {
@@ -37,6 +38,40 @@ export default function structuredReturn(pi: ExtensionAPI) {
           lines.push(`  ${reg.id}  ${match}  ${via}`);
         }
       }
+
+      ctx.ui.notify(lines.join("\n"), "info");
+    },
+  });
+
+  pi.registerCommand("sr-stats", {
+    description: "Show token savings from structured-return (current session + lifetime)",
+    handler: async (_args, ctx) => {
+      // Current session: walk session entries for our tool results
+      const sessionStats: AggregatedStats = { runs: 0, rawBytes: 0, parsedBytes: 0 };
+      try {
+        const entries = ctx.sessionManager?.getEntries?.() ?? [];
+        for (const entry of entries) {
+          if (entry.type !== "message") continue;
+          const msg = (entry as any).message;
+          if (msg?.role !== "toolResult" || msg?.toolName !== "structured_return") continue;
+          const details = msg.details;
+          if (details?.rawBytes != null && details?.parsedBytes != null) {
+            sessionStats.runs++;
+            sessionStats.rawBytes += details.rawBytes;
+            sessionStats.parsedBytes += details.parsedBytes;
+          }
+        }
+      } catch {
+        // session access may fail in some modes
+      }
+
+      // Lifetime: read all JSONL files
+      const lifetime = readLifetimeStats();
+
+      const lines: string[] = ["structured-return stats", ""];
+      lines.push(...formatStatsBlock("session", sessionStats));
+      lines.push("");
+      lines.push(...formatStatsBlock("lifetime", lifetime));
 
       ctx.ui.notify(lines.join("\n"), "info");
     },
@@ -81,10 +116,26 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const parser = await resolveParser({ cwd, parseAs: args.parseAs, argv, registrations });
       const parsed = await parser.parse(runCtx);
       const result = finalizeResult(parsed, exitCode, logs.logPath, cwd);
+      const resultText = formatResult(result);
+
+      const rawBytes = stdout.length + stderr.length;
+      const parsedBytes = resultText.length;
+      try {
+        appendRun({
+          ts: new Date().toISOString(),
+          session: ctx.sessionManager?.getSessionFile?.() ?? undefined,
+          parser: parser.id,
+          rawBytes,
+          parsedBytes,
+          command: stripCdPrefix(args.command),
+        });
+      } catch {
+        // stats are best-effort — never block the tool result
+      }
 
       return {
-        content: [{ type: "text" as const, text: `${stripCdPrefix(args.command)} → ${formatResult(result)}` }],
-        details: { exitCode, logPath: logs.logPath, parser: parser.id },
+        content: [{ type: "text" as const, text: `${stripCdPrefix(args.command)} → ${resultText}` }],
+        details: { exitCode, logPath: logs.logPath, parser: parser.id, rawBytes, parsedBytes },
       };
     },
     renderCall(args: ObservedRunArgs) {
