@@ -64,18 +64,17 @@ Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 
 | Tool | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
-| Go (`go test -json`) | 394 | 48 | **88%** | stack traces, goroutine frames, panic recovery noise stripped; file:line + expected/actual preserved |
-| Maven (`mvn test`) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
-| Node.js (`node --test`) | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
+| `mvn test` | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
+| `node --test` | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
 | AVA | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
-| Go via JUnit XML | 400 | 58 | **86%** | verbose output with full stack trace per failure |
-| .NET (`dotnet test`) | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
+| `go test` | 394 | 48 | **88%** | stack traces, goroutine frames, panic recovery noise stripped; file:line + expected/actual preserved |
+| `dotnet test` | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
 | Vitest | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
 | Python unittest | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
-| Cargo (`cargo test`) | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
+| `cargo test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
 | pytest | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
 | RSpec | 212 | 55 | **74%** | default output with backtrace |
-| Gradle | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
+| `gradle test` | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
 | Mocha | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
 | Jest | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
 | Minitest | 168 | 59 | **65%** | default output with backtrace |
