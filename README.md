@@ -1,6 +1,6 @@
 # pi-structured-return
 
-A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash`. It runs commands, stores full logs, and returns compact parsed results to the model — 60–95% fewer tokens without losing signal.
+A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash`, returning compact parsed results with full logs — 60–95% fewer tokens without losing signal.
 
 A failing test run, before and after:
 
@@ -45,6 +45,12 @@ pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
 ```
 
 262 → 56 tokens on a 3-test example. Real test suites are much larger — the reduction scales with them, saving thousands of tokens per run.
+
+## Installation
+
+```bash
+pi install npm:@robhowley/pi-structured-return
+```
 
 ## Design
 
@@ -147,14 +153,6 @@ Evaluated for structured parsing but raw output is already compact enough that a
 | `go vet` | ~60 | `file:line:col: message` | same format as `go build` |
 | `vulture` | 58 | `file:line: message (confidence%)` | single line per finding |
 | `pydocstyle` | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
-
-## Installation
-
-Install the skill and extension:
-
-```bash
-pi install npm:@robhowley/pi-structured-return
-```
 
 ## How it works
 
