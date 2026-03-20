@@ -2,9 +2,9 @@
 
 Structured command execution for Pi agents: compact results for the model, full logs for humans.
 
-A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash` to turn noisy CLI output into structured results.
-
 Reduce token usage from common noisy CLI tools by 60–95% without losing signal.
+
+A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash` to turn noisy CLI output into structured results.
 
 A failing test run, before and after:
 
@@ -48,7 +48,7 @@ pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
   test_math.py:8  ZeroDivisionError: division by zero
 ```
 
-262 → 56 tokens. The model knows which tests failed, where, and why. No platform line, no progress bar, no source snippets, no banner separators, no short summary repeating the same info. And that's a single run — in an agentic loop the cost compounds. Every tool result accumulates in context for the life of the task. Over 15 red-green iterations, the difference isn't 262 vs 56 — it's 3,930 vs 840 tokens for one command in one task.
+262 → 56 tokens on a 3-test example. Real test suites are much larger — the reduction scales with them, saving thousands of tokens per run.
 
 ## Design
 
@@ -168,22 +168,7 @@ pi install npm:@robhowley/pi-structured-return
 4. The agent receives the structured result in context — signal only, no noise.
 5. The full log is always available on disk for both the agent and humans to inspect.
 
-<details>
-<summary><strong>All 36 built-in parsers by category</strong></summary>
-
-**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`, `node-test-text`
-
-**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `black-text`, `markdownlint-json`, `prettier-text`, `vale-json`, `tidy-text`, `jsonlint-text`, `isort-text`, `htmlhint-json`
-
-**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`, `clang-text`
-
-**Security & audit:** `bandit-json`, `npm-audit-json`
-
-**Pipeline tools:** `dbt-json` (run, test, compile)
-
 Run `/sr-parsers` in a pi session to see all registered parsers with their match rules.
-
-</details>
 
 ## Extending with project-local parsers
 
