@@ -101,7 +101,6 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 |---|---|---|---|---|
 | `isort --check` | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
 | `black --check` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
-| `bandit` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
 | `ruff check` | 107 | 52 | **51%** | source context + help text per error |
 | `shellcheck` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
 | `npx htmlhint` | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
@@ -121,6 +120,7 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 
 | Tool | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
+| `bandit` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
 | `npm audit` | 158 | 50 | **68%** | strips advisory URLs, fix instructions, CVSS vectors; advisory titles joined per package |
 
 ### Pipeline tools
