@@ -12,7 +12,12 @@
     "url": "https://github.com/robhowley/pi-structured-return/issues"
   },
   "keywords": [
-    "pi-package"
+    "pi-package",
+    "pi-coding-agent",
+    "pi",
+    "pi-extension",
+    "token-reduction",
+    "structured-output"
   ],
   "files": [
     "extensions",
