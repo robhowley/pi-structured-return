@@ -66,18 +66,18 @@ Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 |---|---|---|---|---|
 | `mvn test` | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
 | `node --test` | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
-| AVA | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
+| `npx ava` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
 | `go test` | 394 | 48 | **88%** | stack traces, goroutine frames, panic recovery noise stripped; file:line + expected/actual preserved |
 | `dotnet test` | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
-| Vitest | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
-| Python unittest | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
+| `npx vitest` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
+| `python -m unittest` | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
 | `cargo test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
-| pytest | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
-| RSpec | 212 | 55 | **74%** | default output with backtrace |
+| `pytest` | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
+| `rspec` | 212 | 55 | **74%** | default output with backtrace |
 | `gradle test` | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
-| Mocha | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
-| Jest | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
-| Minitest | 168 | 59 | **65%** | default output with backtrace |
+| `npx mocha` | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
+| `npx jest` | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
+| `ruby` (minitest) | 168 | 59 | **65%** | default output with backtrace |
 
 ### Build tools and compilers
 
@@ -86,12 +86,12 @@ Benchmark: 1 file, 1–2 errors. Reduction scales with error count since raw out
 | Tool | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
 | `dotnet build` | 383 | 53 | **86%** | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
-| jsonlint | 148 | 28 | **81%** | strips stack trace, source pointer line; preserves line number and expecting message |
-| HTML Tidy | 233 | 51 | **78%** | strips remediation advice, accessibility tips, reformatted HTML output, Info lines |
+| `npx jsonlint` | 148 | 28 | **81%** | strips stack trace, source pointer line; preserves line number and expecting message |
+| `tidy` | 233 | 51 | **78%** | strips remediation advice, accessibility tips, reformatted HTML output, Info lines |
 | `cargo build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
-| swiftc | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
-| gcc / clang | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
-| javac | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
+| `swiftc` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
+| `gcc` / `clang` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
+| `javac` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
 
 ### Linters and type checkers
 
@@ -99,23 +99,23 @@ Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound —
 
 | Tool | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
-| isort | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
-| Black | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
-| Bandit | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
-| Ruff | 107 | 52 | **51%** | source context + help text per error |
-| ShellCheck | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
-| HTMLHint | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
-| Vale | 141 | 79 | **44%** | strips ANSI codes, Action/Span metadata, column-aligned formatting |
-| markdownlint | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
-| Pyright | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
-| RuboCop | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
-| tsc (TypeScript) | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
-| Stylelint | 70 | 51 | **27%** | strips summary footer and fix hint |
-| Pylint | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
-| Prettier | 38 | 33 | **13%** | strips preamble, [warn] prefixes, footer hint; scales with file count |
-| Hadolint | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
-| ESLint | 64 | 59 | **8%** | already compact formatter |
-| mypy | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
+| `isort --check` | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
+| `black --check` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
+| `bandit` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
+| `ruff check` | 107 | 52 | **51%** | source context + help text per error |
+| `shellcheck` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
+| `npx htmlhint` | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
+| `vale` | 141 | 79 | **44%** | strips ANSI codes, Action/Span metadata, column-aligned formatting |
+| `markdownlint` | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
+| `pyright` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
+| `rubocop` | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
+| `tsc` | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
+| `stylelint` | 70 | 51 | **27%** | strips summary footer and fix hint |
+| `pylint` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
+| `prettier --check` | 38 | 33 | **13%** | strips preamble, [warn] prefixes, footer hint; scales with file count |
+| `hadolint` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
+| `eslint` | 64 | 59 | **8%** | already compact formatter |
+| `mypy` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
 
 ### Security and audit
 
@@ -145,12 +145,12 @@ Evaluated for structured parsing but raw output is already compact enough that a
 | Tool | Raw tokens | Format | Why no parser |
 |---|---|---|---|
 | `go build` | 85 | `file:line:col: message` | one line per error, no decoration |
-| flake8 | 75 | `file:line:col: CODE message` | no JSON without a plugin; text is already one line per violation |
-| yamllint | 72 | `file:line:col level message (rule)` | filename printed once; one line per issue |
-| golangci-lint | 59 | `file:line:col: message (linter)` | text output already minimal; JSON includes massive linter report |
-| `go vet` | ~60 | `file:line:col: message` | same format as go build |
-| Vulture | 58 | `file:line: message (confidence%)` | single line per finding |
-| pydocstyle | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
+| `flake8` | 75 | `file:line:col: CODE message` | no JSON without a plugin; text is already one line per violation |
+| `yamllint` | 72 | `file:line:col level message (rule)` | filename printed once; one line per issue |
+| `golangci-lint` | 59 | `file:line:col: message (linter)` | text output already minimal; JSON includes massive linter report |
+| `go vet` | ~60 | `file:line:col: message` | same format as `go build` |
+| `vulture` | 58 | `file:line: message (confidence%)` | single line per finding |
+| `pydocstyle` | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
 
 ## Installation
 
