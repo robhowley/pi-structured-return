@@ -4,7 +4,7 @@ import { extractJsStackLocation, safeReadFile } from "./utils";
 
 /**
  * Parses AVA's default text output (--no-color).
- * Reads stderrPath — AVA writes all output (results + diagnostics) to stderr.
+ * Reads stdoutPath — AVA writes all output (results + diagnostics) to stdout.
  */
 
 // Summary line: "2 tests failed" or "3 tests passed"
@@ -16,7 +16,7 @@ const FAIL_MARKER_RE = /^\s*✘\s+\[fail\]:\s+(.+?)(?:\s+Error thrown in test)?$
 const parser: ParserModule = {
   id: "ava-text",
   async parse(ctx) {
-    const stderr = safeReadFile(ctx.stderrPath);
+    const stderr = safeReadFile(ctx.stdoutPath);
     if (!stderr.trim()) {
       return { tool: "ava", status: "error", summary: "no output", logPath: ctx.logPath };
     }
