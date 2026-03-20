@@ -2,9 +2,11 @@
 
 Structured command execution for Pi agents: compact results for the model, full logs for humans.
 
-Tool output is designed for humans: source diffs, line annotations, timing breakdowns, absolute paths repeated on every line. Useful on a terminal. Expensive in a model context, especially on failure when output is most verbose and the model needs to act fast.
+A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash` to turn noisy CLI output into structured results.
 
-This Pi package adds a `structured_return` tool alongside `bash`. A bundled skill teaches the model when to reach for it — test suites, linters, build tools, data pipelines — anywhere verbose output burns tokens. It captures full logs, applies a parser, and returns a compact structured result. The full output stays on disk.
+Reduce token usage from common noisy CLI tools by 60–95% without losing signal.
+
+A failing test run, before and after:
 
 **Raw pytest output (262 tokens):**
 ```
@@ -48,6 +50,10 @@ pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
 
 262 → 56 tokens. The model knows which tests failed, where, and why. No platform line, no progress bar, no source snippets, no banner separators, no short summary repeating the same info. And that's a single run — in an agentic loop the cost compounds. Every tool result accumulates in context for the life of the task. Over 15 red-green iterations, the difference isn't 262 vs 56 — it's 3,930 vs 840 tokens for one command in one task.
 
+## Design
+
+`structured_return` is a separate tool, not a wrapper around `bash`. Intercepting `bash` to silently rewrite commands would override a primitive the model and platform both rely on. Pi's philosophy is to extend rather than obfuscate: features are built on top of the platform, not hidden inside it. A dedicated tool honors that. It adds to the available surface, keeps `bash` honest, and leaves the choice explicit. The skill guides the model toward it; nothing is hijacked to get there.
+
 ## Token reduction
 
 Measured with `cl100k_base` (tiktoken). All benchmarks use tiny fixtures — reduction grows with real-world output.
@@ -74,37 +80,49 @@ Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 | `junit-xml` (jest) | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
 | `minitest-text` | 168 | 59 | **65%** | default output with backtrace |
 
-### Linters, type checkers, and build tools
+### Build tools and compilers
+
+Benchmark: 1 file, 1–2 errors. Reduction scales with error count since raw output includes source snippets, caret indicators, and annotations per error.
+
+| Parser | Raw | Structured | Reduction | Notes |
+|---|---|---|---|---|
+| `dotnet-build-text` | 383 | 53 | **86%** | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
+| `jsonlint-text` | 148 | 28 | **81%** | strips stack trace, source pointer line; preserves line number and expecting message |
+| `tidy-text` | 233 | 51 | **78%** | strips remediation advice, accessibility tips, reformatted HTML output, Info lines |
+| `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
+| `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
+| `clang-text` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
+| `javac-text` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
+
+### Linters and type checkers
 
 Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound — scales with file and error count since raw output repeats paths, source snippets, and annotations per violation.
 
 | Parser | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
-| `dotnet-build-text` | 383 | 53 | **86%** | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
-| `cargo-build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
-| `swiftc-text` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
+| `isort-text` | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
+| `black-text` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
+| `bandit-json` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
 | `ruff-json` | 107 | 52 | **51%** | source context + help text per error |
 | `shellcheck-json` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
+| `htmlhint-json` | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
+| `vale-json` | 141 | 79 | **44%** | strips ANSI codes, Action/Span/Description fields, column-aligned formatting |
+| `markdownlint-json` | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
+| `pyright-json` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
 | `rubocop-json` | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
 | `tsc-text` | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
 | `stylelint-json` | 70 | 51 | **27%** | strips summary footer and fix hint |
 | `pylint-json` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
-| `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
 | `prettier-text` | 38 | 33 | **13%** | strips preamble, [warn] prefixes, footer hint; scales with file count |
+| `hadolint-json` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
 | `eslint-json` | 64 | 59 | **8%** | already compact formatter |
-| `jsonlint-text` | 148 | 28 | **81%** | strips stack trace, source pointer line; preserves line number and expecting message |
-| `npm-audit-json` | 158 | 50 | **68%** | strips advisory URLs, fix instructions, CVSS vectors; advisory titles joined per package |
-| `isort-text` | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
-| `htmlhint-json` | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
-| `tidy-text` | 233 | 51 | **78%** | strips remediation advice, accessibility tips, HTML output, Info lines |
-| `bandit-json` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
-| `markdownlint-json` | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
-| `vale-json` | 141 | 79 | **44%** | strips ANSI codes, Action/Span/Description fields, column-aligned formatting |
-| `pyright-json` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
-| `clang-text` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
-| `javac-text` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
 | `mypy-json` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
-| `black-text` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
+
+### Security and audit
+
+| Parser | Raw | Structured | Reduction | Notes |
+|---|---|---|---|---|
+| `npm-audit-json` | 158 | 50 | **68%** | strips advisory URLs, fix instructions, CVSS vectors; advisory titles joined per package |
 
 ### Pipeline tools
 
@@ -135,21 +153,6 @@ Evaluated for structured parsing but raw output is already compact enough that a
 | `vulture` | 58 | `file:line: message (confidence%)` | single line per finding |
 | `pydocstyle` | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
 
-## Built-in parsers
-
-**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`, `node-test-text`
-
-**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `black-text`, `markdownlint-json`, `prettier-text`, `vale-json`, `tidy-text`, `jsonlint-text`, `isort-text`, `htmlhint-json`
-
-**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`, `clang-text`
-
-**Security & audit:** `bandit-json`, `npm-audit-json`
-
-**Pipeline tools:** `dbt-json` (run, test, compile)
-
-Run `/sr-parsers` in a pi session to see all registered parsers with their match rules.
-
-
 ## Installation
 
 Install the skill and extension:
@@ -165,6 +168,23 @@ pi install npm:@robhowley/pi-structured-return
 3. A parser converts noisy CLI output into a compact structured result. If no parser matches, the last 200 lines and the log path are returned as a fallback.
 4. The agent receives the structured result in context — signal only, no noise.
 5. The full log is always available on disk for both the agent and humans to inspect.
+
+<details>
+<summary><strong>All 36 built-in parsers by category</strong></summary>
+
+**Test runners:** `junit-xml` (pytest, Gradle, Maven, Jest, Go, .NET — anything that emits JUnit XML), `vitest-json`, `rspec-json`, `minitest-text`, `cargo-test`, `go-test-json`, `mocha-json`, `ava-text`, `unittest-text`, `node-test-text`
+
+**Linters & type checkers:** `ruff-json`, `eslint-json`, `mypy-json`, `pyright-json`, `tsc-text`, `pylint-json`, `shellcheck-json`, `rubocop-json`, `swiftc-text`, `hadolint-json`, `stylelint-json`, `black-text`, `markdownlint-json`, `prettier-text`, `vale-json`, `tidy-text`, `jsonlint-text`, `isort-text`, `htmlhint-json`
+
+**Build tools:** `cargo-build`, `javac-text`, `dotnet-build-text`, `clang-text`
+
+**Security & audit:** `bandit-json`, `npm-audit-json`
+
+**Pipeline tools:** `dbt-json` (run, test, compile)
+
+Run `/sr-parsers` in a pi session to see all registered parsers with their match rules.
+
+</details>
 
 ## Extending with project-local parsers
 
@@ -245,8 +265,3 @@ Every parser returns the same shape. The model always knows where to look.
 | `artifact` | `string?` | Path to the saved report file, if one was written |
 | `logPath` | `string` | Path to full stdout+stderr log |
 | `rawTail` | `string?` | Last 200 lines of log, included on fallback when no parser matched |
-
-## Design
-
-`structured_return` is a separate tool, not a wrapper around `bash`. Intercepting `bash` to silently rewrite commands would override a primitive the model and platform both rely on. Pi's philosophy is to extend rather than obfuscate: features are built on top of the platform, not hidden inside it. A dedicated tool honors that. It adds to the available surface, keeps `bash` honest, and leaves the choice explicit. The skill guides the model toward it; nothing is hijacked to get there.
-
