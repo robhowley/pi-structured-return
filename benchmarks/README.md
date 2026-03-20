@@ -185,8 +185,8 @@ Run both commands from `test-runners/cargo/` (cargo test) and `test-runners/carg
 No extra dependencies — uses Go's built-in `-json` flag. Run from `test-runners/go-json/`:
 
 ```bash
-# raw
-go test -json ./...
+# raw (default text output — what bash returns)
+go test ./...
 
 # structured
 structured_return({ command: "go test -json ./...", parseAs: "go-test-json" })
