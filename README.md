@@ -1,10 +1,6 @@
 # pi-structured-return
 
-Structured command execution for Pi agents: compact results for the model, full logs for humans.
-
-Reduce token usage from common noisy CLI tools by 60–95% without losing signal.
-
-A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash` to turn noisy CLI output into structured results.
+A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash`. It runs commands, stores full logs, and returns compact parsed results to the model — 60–95% fewer tokens without losing signal.
 
 A failing test run, before and after:
 
