@@ -64,7 +64,7 @@ Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 
 | Tool | Raw | Structured | Reduction | Notes |
 |---|---|---|---|---|
-| Go (`go test -json`) | 1819 | 48 | **97%** | NDJSON event stream with stack traces; file:line + expected/actual preserved |
+| Go (`go test -json`) | 394 | 48 | **88%** | stack traces, goroutine frames, panic recovery noise stripped; file:line + expected/actual preserved |
 | Maven (`mvn test`) | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
 | Node.js (`node --test`) | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
 | AVA | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
