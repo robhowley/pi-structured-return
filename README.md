@@ -52,6 +52,8 @@ pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
 pi install npm:@robhowley/pi-structured-return
 ```
 
+Then run `/sr-parsers` in a pi session to see all registered parsers and their match rules.
+
 ## Design
 
 `structured_return` is a separate tool, not a wrapper around `bash`. Intercepting `bash` to silently rewrite commands would override a primitive the model and platform both rely on. Pi's philosophy is to extend rather than obfuscate: features are built on top of the platform, not hidden inside it. A dedicated tool honors that. It adds to the available surface, keeps `bash` honest, and leaves the choice explicit. The skill guides the model toward it; nothing is hijacked to get there.
