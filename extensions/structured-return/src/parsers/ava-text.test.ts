@@ -10,8 +10,8 @@ function makeCtx(stderr: string, cwd = "/project"): RunContext {
   const stderrPath = path.join(dir, "stderr");
   const stdoutPath = path.join(dir, "stdout");
   const logPath = path.join(dir, "log");
-  fs.writeFileSync(stderrPath, stderr);
-  fs.writeFileSync(stdoutPath, "");
+  fs.writeFileSync(stderrPath, "");
+  fs.writeFileSync(stdoutPath, stderr);
   fs.writeFileSync(logPath, stderr);
   return {
     command: "npx ava test_math.js --no-color",
