@@ -110,7 +110,7 @@ export function formatResult(result: ParsedResult): string {
   }
   // If the parser detected failures but couldn't extract details, surface the
   // log path and raw tail so the model has a path forward instead of a dead end.
-  if (result.status === "fail" && (result.failures ?? []).length === 0) {
+  if ((result.status === "fail" || result.status === "error") && (result.failures ?? []).length === 0) {
     if (result.logPath) lines.push(`log: ${result.logPath}`);
     if (result.rawTail) lines.push(result.rawTail);
   }
@@ -160,6 +160,13 @@ export function finalizeResult(
     };
   }
   const finalized: ParsedResult = { ...result, exitCode, cwd, logPath };
+  // Surface catastrophic failures (command not found, permission denied, missing
+  // interpreter, etc.) — the combined log contains the actual diagnostic.
+  if (finalized.status === "error" && exitCode !== 0 && !finalized.rawTail) {
+    const log = safeReadFile(logPath);
+    const lines = log.split(/\r?\n/);
+    finalized.rawTail = lines.slice(-200).join("\n");
+  }
   // Safety net: if the parser reports failures but couldn't extract any details
   // (e.g., tool output format changed), append the log tail so the model isn't
   // left with "2 failed" and nothing actionable.
