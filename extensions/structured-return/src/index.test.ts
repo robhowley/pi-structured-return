@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, it, expect } from "vitest";
-import { stripCdPrefix, formatResult, finalizeResult } from "./index";
+import { stripCdPrefix, formatResult, finalizeResult, expandArtifactPaths } from "./index";
 
 describe("stripCdPrefix", () => {
   it("strips cd /path && prefix", () => {
@@ -120,6 +120,61 @@ describe("finalizeResult", () => {
       "/project"
     );
     expect(result.rawTail).toBe("SELECT * FROM ...");
+  });
+});
+
+describe("expandArtifactPaths", () => {
+  it("expands glob patterns to matching files (sorted)", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "expand-glob-"));
+    fs.writeFileSync(path.join(dir, "TEST-Bar.xml"), "<bar/>");
+    fs.writeFileSync(path.join(dir, "TEST-Foo.xml"), "<foo/>");
+    fs.writeFileSync(path.join(dir, "other.txt"), "ignore");
+
+    const result = expandArtifactPaths(["TEST-*.xml"], dir);
+    expect(result).toEqual([path.join(dir, "TEST-Bar.xml"), path.join(dir, "TEST-Foo.xml")]);
+  });
+
+  it("keeps unmatched patterns as-is (parser handles missing files)", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "expand-nomatch-"));
+    const result = expandArtifactPaths(["reports/TEST-*.xml"], dir);
+    expect(result).toEqual([path.join(dir, "reports/TEST-*.xml")]);
+  });
+
+  it("resolves relative paths against cwd", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "expand-rel-"));
+    const sub = path.join(dir, "build");
+    fs.mkdirSync(sub);
+    fs.writeFileSync(path.join(sub, "report.xml"), "<ok/>");
+
+    const result = expandArtifactPaths(["build/report.xml"], dir);
+    expect(result).toEqual([path.join(dir, "build/report.xml")]);
+  });
+
+  it("passes through absolute paths unchanged", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "expand-abs-"));
+    fs.writeFileSync(path.join(dir, "report.xml"), "<ok/>");
+
+    const abs = path.join(dir, "report.xml");
+    const result = expandArtifactPaths([abs], "/some/other/cwd");
+    expect(result).toEqual([abs]);
+  });
+
+  it("handles multiple patterns, some with globs and some without", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "expand-multi-"));
+    fs.writeFileSync(path.join(dir, "TEST-A.xml"), "a");
+    fs.writeFileSync(path.join(dir, "TEST-B.xml"), "b");
+    fs.writeFileSync(path.join(dir, "coverage.xml"), "c");
+
+    const result = expandArtifactPaths(["TEST-*.xml", "coverage.xml"], dir);
+    expect(result).toEqual([
+      path.join(dir, "TEST-A.xml"),
+      path.join(dir, "TEST-B.xml"),
+      path.join(dir, "coverage.xml"),
+    ]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(expandArtifactPaths([], "/any")).toEqual([]);
   });
 });
 

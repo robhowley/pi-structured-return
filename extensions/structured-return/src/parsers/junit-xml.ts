@@ -219,7 +219,6 @@ const parser: ParserModule = {
       status: totalFailed > 0 ? "fail" : "pass",
       summary: totalFailed > 0 ? `${totalFailed} failed, ${passed} passed` : `${passed} passed`,
       failures,
-      artifact: ctx.artifactPaths[0],
       logPath: ctx.logPath,
     };
   },

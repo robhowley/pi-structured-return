@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { globSync } from "glob";
 import { Type } from "@sinclair/typebox";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
@@ -105,11 +105,7 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const argv = shellSplit(args.command);
       const { stdout, stderr, exitCode } = await runCommand(args.command, cwd);
       const logs = writeRunArtifacts(runDir, runId, stdout, stderr);
-      const artifactPaths = (args.artifactPaths ?? []).flatMap((p) => {
-        const resolved = path.isAbsolute(p) ? p : path.join(cwd, p);
-        const expanded = globSync(resolved);
-        return expanded.length > 0 ? expanded.sort() : [resolved];
-      });
+      const artifactPaths = expandArtifactPaths(args.artifactPaths ?? [], cwd);
       const runCtx: RunContext = {
         command: args.command,
         argv,
@@ -171,6 +167,15 @@ export function formatResult(result: ParsedResult): string {
     if (result.rawTail) lines.push(result.rawTail);
   }
   return lines.join("\n");
+}
+
+/** Resolve and glob-expand artifact paths. Patterns that match nothing are kept as-is (parser handles missing files). */
+export function expandArtifactPaths(raw: string[], cwd: string): string[] {
+  return raw.flatMap((p) => {
+    const resolved = path.isAbsolute(p) ? p : path.join(cwd, p);
+    const expanded = fs.globSync(resolved);
+    return expanded.length > 0 ? expanded.sort() : [resolved];
+  });
 }
 
 export function stripCdPrefix(command: string): string {
