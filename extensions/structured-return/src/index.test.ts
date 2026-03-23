@@ -173,6 +173,19 @@ describe("expandArtifactPaths", () => {
     ]);
   });
 
+  it("expands globs with * in directory positions (multi-module Gradle)", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "expand-dirglob-"));
+    const modA = path.join(dir, "moduleA", "build", "test-results", "test");
+    const modB = path.join(dir, "moduleB", "build", "test-results", "test");
+    fs.mkdirSync(modA, { recursive: true });
+    fs.mkdirSync(modB, { recursive: true });
+    fs.writeFileSync(path.join(modA, "TEST-FooTest.xml"), "<foo/>");
+    fs.writeFileSync(path.join(modB, "TEST-BarTest.xml"), "<bar/>");
+
+    const result = expandArtifactPaths(["*/build/test-results/test/TEST-*.xml"], dir);
+    expect(result).toEqual([path.join(modA, "TEST-FooTest.xml"), path.join(modB, "TEST-BarTest.xml")]);
+  });
+
   it("returns empty array for empty input", () => {
     expect(expandArtifactPaths([], "/any")).toEqual([]);
   });

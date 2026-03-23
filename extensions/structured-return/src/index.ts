@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
-import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { globSync } from "glob";
 import { Type } from "@sinclair/typebox";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
@@ -173,7 +173,7 @@ export function formatResult(result: ParsedResult): string {
 export function expandArtifactPaths(raw: string[], cwd: string): string[] {
   return raw.flatMap((p) => {
     const resolved = path.isAbsolute(p) ? p : path.join(cwd, p);
-    const expanded = fs.globSync(resolved);
+    const expanded = globSync(resolved);
     return expanded.length > 0 ? expanded.sort() : [resolved];
   });
 }

@@ -51,7 +51,8 @@
     "prepare": "node -e \"if (process.env.CI || process.env.GITHUB_ACTIONS) process.exit(0)\" || husky"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.4.1"
+    "fast-xml-parser": "^5.4.1",
+    "glob": "^11.0.0"
   },
   "devDependencies": {
     "@mariozechner/pi-coding-agent": "*",
