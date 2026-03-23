@@ -20,6 +20,25 @@ function makeCtx(xml: string, cwd = "/project"): RunContext {
   };
 }
 
+function makeMultiCtx(xmlFiles: Record<string, string>, cwd = "/project"): RunContext {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "junit-multi-"));
+  const artifactPaths: string[] = [];
+  for (const [name, xml] of Object.entries(xmlFiles)) {
+    const p = path.join(dir, name);
+    fs.writeFileSync(p, xml);
+    artifactPaths.push(p);
+  }
+  return {
+    command: "gradle test",
+    argv: ["gradle", "test"],
+    cwd,
+    artifactPaths,
+    stdoutPath: path.join(dir, "stdout"),
+    stderrPath: path.join(dir, "stderr"),
+    logPath: path.join(dir, "log"),
+  };
+}
+
 const PASSING = (name: string, classname = "com.example.MyTest") =>
   `<testcase name="${name}" classname="${classname}" time="0.001"/>`;
 
@@ -318,6 +337,74 @@ Received: 12
       expect(result.status).toBe("fail");
       expect(result.summary).toBe("2 failed, 2 passed");
       expect(result.failures).toHaveLength(2);
+    });
+  });
+
+  describe("multi-file artifact paths (Gradle-style)", () => {
+    it("aggregates results across multiple XML files", async () => {
+      const ctx = makeMultiCtx({
+        "TEST-com.example.FooTest.xml": `<testsuite name="com.example.FooTest" tests="2" failures="1" errors="0">
+          ${PASSING("test_a")}
+          ${FAILING("test_b", "com.example.FooTest", "expected 2 but was 1")}
+        </testsuite>`,
+        "TEST-com.example.BarTest.xml": `<testsuite name="com.example.BarTest" tests="3" failures="0" errors="0">
+          ${PASSING("test_c")}
+          ${PASSING("test_d")}
+          ${PASSING("test_e")}
+        </testsuite>`,
+      });
+      const result = await parser.parse(ctx);
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("1 failed, 4 passed");
+      expect(result.failures).toHaveLength(1);
+      expect(result.failures![0].message).toBe("expected 2 but was 1");
+    });
+
+    it("all passing across multiple files → status pass", async () => {
+      const ctx = makeMultiCtx({
+        "TEST-FooTest.xml": `<testsuite name="FooTest" tests="2" failures="0" errors="0">
+          ${PASSING("a")}
+          ${PASSING("b")}
+        </testsuite>`,
+        "TEST-BarTest.xml": `<testsuite name="BarTest" tests="1" failures="0" errors="0">
+          ${PASSING("c")}
+        </testsuite>`,
+      });
+      const result = await parser.parse(ctx);
+      expect(result.status).toBe("pass");
+      expect(result.summary).toBe("3 passed");
+      expect(result.failures).toHaveLength(0);
+    });
+
+    it("failures across multiple files are all collected", async () => {
+      const ctx = makeMultiCtx({
+        "TEST-FooTest.xml": `<testsuite name="FooTest" tests="2" failures="1" errors="0">
+          ${PASSING("a")}
+          ${FAILING("b", "FooTest", "foo broke")}
+        </testsuite>`,
+        "TEST-BarTest.xml": `<testsuite name="BarTest" tests="2" failures="0" errors="1">
+          ${PASSING("c")}
+          ${ERROR("d", "BarTest", "bar exploded")}
+        </testsuite>`,
+      });
+      const result = await parser.parse(ctx);
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 2 passed");
+      expect(result.failures).toHaveLength(2);
+      expect(result.failures![0].message).toBe("foo broke");
+      expect(result.failures![1].message).toBe("bar exploded");
+    });
+
+    it("skips empty artifact files gracefully", async () => {
+      const ctx = makeMultiCtx({
+        "TEST-FooTest.xml": `<testsuite name="FooTest" tests="1" failures="0" errors="0">
+          ${PASSING("a")}
+        </testsuite>`,
+        "TEST-Empty.xml": "",
+      });
+      const result = await parser.parse(ctx);
+      expect(result.status).toBe("pass");
+      expect(result.summary).toBe("1 passed");
     });
   });
 });

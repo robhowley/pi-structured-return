@@ -139,21 +139,31 @@ Prefer better output at the source.
 
 JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.
 
+`artifactPaths` supports glob patterns — the parser aggregates results across all matching files. Use globs for tools that write one XML per test class (Gradle, Maven/Surefire). Use a single path for tools that write one consolidated file (pytest, Jest, etc.).
+
 - `structured_return({ command: "[tool] [args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — pytest, nose2, and any other tool that writes to a file via `--junitxml`
 - `structured_return({ command: "go test [any go test args] 2>&1 | go-junit-report > .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — Go requires `go-junit-report` (`go install github.com/jstemmer/go-junit-report/v2@latest`); pipe `go test -v` output through it
-- `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — Gradle writes one XML per test class; pass all matching paths
+
+#### Gradle
+
+Gradle writes one XML file per test class — there is no single-file option. Always use a glob pattern.
+
+- `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — full test suite; results aggregated across all matched files
+- `structured_return({ command: "gradle test --tests 'com.example.FooTest'", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — single class; glob still works (matches the one file)
+- For multi-module projects: `structured_return({ command: "gradle :module:test", parseAs: "junit-xml", artifactPaths: ["module/build/test-results/test/TEST-*.xml"] })` — scope the glob to the module's build dir
+
+#### Maven
+
+Maven Surefire writes one XML per test class — same as Gradle. Always use a glob pattern.
+
+- `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — full test suite; any maven args (e.g. `-pl module`, `-Dtest=ClassName`) go before `test`
+- For multi-module projects: `structured_return({ command: "mvn test -pl module", parseAs: "junit-xml", artifactPaths: ["module/target/surefire-reports/TEST-*.xml"] })` — scope the glob to the module
 
 #### .NET / xUnit
 
 `dotnet test` requires the `JunitXml.TestLogger` package (`dotnet add package JunitXml.TestLogger`). Pass the logger inline — no config file changes needed. Add a namespace to your test class or the logger will fall back to `UnknownNamespace.UnknownType` for classnames.
 
 - `structured_return({ command: "dotnet test --logger \"junit;LogFilePath=.tmp/report.xml\"", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — any dotnet test args (project path, `--filter`, etc.) go before `--logger`
-
-#### Maven
-
-`mvn test` writes one XML per test class via surefire — no extra configuration needed.
-
-- `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — surefire writes one XML per class; glob covers all of them; any maven args (e.g. `-pl module`, `-Dtest=ClassName`) go before `test`
 
 #### Jest
 

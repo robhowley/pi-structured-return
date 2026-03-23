@@ -147,64 +147,68 @@ function resolveFile(tc: JUnitTestCase, suite: JUnitTestSuite, cwd: string): str
 const parser: ParserModule = {
   id: "junit-xml",
   async parse(ctx) {
-    const artifactPath = ctx.artifactPaths[0] ?? ctx.stdoutPath;
-    const xml = safeReadFile(artifactPath);
-    const doc = xmlParser.parse(xml) as JUnitDocument;
-
-    const suites: JUnitTestSuite[] = doc.testsuites?.testsuite ?? doc.testsuite ?? [];
+    const artifactSources = ctx.artifactPaths.length > 0 ? ctx.artifactPaths : [ctx.stdoutPath];
 
     let totalTests = 0;
     let totalFailed = 0;
     const failures: ParsedFailure[] = [];
 
-    for (const suite of suites) {
-      totalTests += Number(suite.tests ?? 0);
-      totalFailed += Number(suite.failures ?? 0) + Number(suite.errors ?? 0);
+    for (const artifactPath of artifactSources) {
+      const xml = safeReadFile(artifactPath);
+      if (!xml.trim()) continue;
+      const doc = xmlParser.parse(xml) as JUnitDocument;
 
-      for (const tc of suite.testcase ?? []) {
-        const rawProblem = tc.failure ?? tc.error;
-        if (!rawProblem) continue;
-        const problem: JUnitFailureOrError = typeof rawProblem === "string" ? { "#text": rawProblem } : rawProblem;
+      const suites: JUnitTestSuite[] = doc.testsuites?.testsuite ?? doc.testsuite ?? [];
 
-        const bodyLocation = problem["#text"] ? parseBodyLocation(problem["#text"], tc.classname) : undefined;
-        const panicInfo =
-          !bodyLocation && suite["system-out"] && tc.name ? parsePanicInfo(suite["system-out"], tc.name) : undefined;
-        const file =
-          (tc.file ?? suite.file)
-            ? resolveFile(tc, suite, ctx.cwd)
-            : (bodyLocation?.file ?? panicInfo?.file ?? resolveFile(tc, suite, ctx.cwd));
-        const line = tc.line !== undefined ? Number(tc.line) : (bodyLocation?.line ?? panicInfo?.line);
-        const id = [file, line, tc.name].filter(Boolean).join(":");
+      for (const suite of suites) {
+        totalTests += Number(suite.tests ?? 0);
+        totalFailed += Number(suite.failures ?? 0) + Number(suite.errors ?? 0);
 
-        failures.push({
-          id: id || String(failures.length),
-          file,
-          line: Number.isNaN(line) ? undefined : line,
-          message: (() => {
-            const raw =
-              problem.message && problem.message.toLowerCase() !== "failed"
-                ? problem.message
-                : (bodyLocation?.message ??
-                  panicInfo?.message ??
-                  problem.message ??
-                  problem["#text"]?.trim().split("\n")[0]);
-            if (!raw) return undefined;
-            const decoded = decodeXmlEntities(raw);
-            // Append assertion diff lines (Expected/Received/Actual) from the body when not already present.
-            // Covers Jest-style failures where the diff follows the error type line in #text.
-            if (
-              problem["#text"] &&
-              !decoded.includes("Expected") &&
-              !decoded.includes("Received") &&
-              !decoded.includes("Actual")
-            ) {
-              const diff = extractAssertionDiff(problem["#text"]);
-              if (diff) return `${decoded}\n${diff}`;
-            }
-            return decoded;
-          })(),
-          rule: problem.type,
-        });
+        for (const tc of suite.testcase ?? []) {
+          const rawProblem = tc.failure ?? tc.error;
+          if (!rawProblem) continue;
+          const problem: JUnitFailureOrError = typeof rawProblem === "string" ? { "#text": rawProblem } : rawProblem;
+
+          const bodyLocation = problem["#text"] ? parseBodyLocation(problem["#text"], tc.classname) : undefined;
+          const panicInfo =
+            !bodyLocation && suite["system-out"] && tc.name ? parsePanicInfo(suite["system-out"], tc.name) : undefined;
+          const file =
+            (tc.file ?? suite.file)
+              ? resolveFile(tc, suite, ctx.cwd)
+              : (bodyLocation?.file ?? panicInfo?.file ?? resolveFile(tc, suite, ctx.cwd));
+          const line = tc.line !== undefined ? Number(tc.line) : (bodyLocation?.line ?? panicInfo?.line);
+          const id = [file, line, tc.name].filter(Boolean).join(":");
+
+          failures.push({
+            id: id || String(failures.length),
+            file,
+            line: Number.isNaN(line) ? undefined : line,
+            message: (() => {
+              const raw =
+                problem.message && problem.message.toLowerCase() !== "failed"
+                  ? problem.message
+                  : (bodyLocation?.message ??
+                    panicInfo?.message ??
+                    problem.message ??
+                    problem["#text"]?.trim().split("\n")[0]);
+              if (!raw) return undefined;
+              const decoded = decodeXmlEntities(raw);
+              // Append assertion diff lines (Expected/Received/Actual) from the body when not already present.
+              // Covers Jest-style failures where the diff follows the error type line in #text.
+              if (
+                problem["#text"] &&
+                !decoded.includes("Expected") &&
+                !decoded.includes("Received") &&
+                !decoded.includes("Actual")
+              ) {
+                const diff = extractAssertionDiff(problem["#text"]);
+                if (diff) return `${decoded}\n${diff}`;
+              }
+              return decoded;
+            })(),
+            rule: problem.type,
+          });
+        }
       }
     }
 
@@ -215,7 +219,6 @@ const parser: ParserModule = {
       status: totalFailed > 0 ? "fail" : "pass",
       summary: totalFailed > 0 ? `${totalFailed} failed, ${passed} passed` : `${passed} passed`,
       failures,
-      artifact: ctx.artifactPaths[0],
       logPath: ctx.logPath,
     };
   },

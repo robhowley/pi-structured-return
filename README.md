@@ -241,6 +241,5 @@ Every parser returns the same shape. The model always knows where to look.
 | `summary` | `string` | One-line human+model readable result (`3 failed, 12 passed`) |
 | `cwd` | `string` | Working directory — anchor for resolving relative paths in failures |
 | `failures` | `{ id, file?, line?, message?, rule? }[]` | Per-failure details with relative file paths |
-| `artifact` | `string?` | Path to the saved report file, if one was written |
 | `logPath` | `string` | Path to full stdout+stderr log |
 | `rawTail` | `string?` | Last 200 lines of log, included on fallback when no parser matched |

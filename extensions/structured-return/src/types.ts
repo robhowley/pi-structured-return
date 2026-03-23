@@ -13,7 +13,6 @@ export type ParsedResult = {
   summary: string;
   cwd?: string;
   failures?: ParsedFailure[];
-  artifact?: string;
   logPath?: string;
   rawTail?: string;
 };
