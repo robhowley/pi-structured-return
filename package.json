@@ -1,6 +1,6 @@
 {
   "name": "@robhowley/pi-structured-return",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "Turn noisy CLI output into compact structured results (fewer tokens), full logs preserved.",
   "license": "MIT",
   "repository": {
