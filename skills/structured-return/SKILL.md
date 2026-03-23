@@ -150,14 +150,14 @@ Gradle writes one XML file per test class — there is no single-file option. Al
 
 - `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — full test suite; results aggregated across all matched files
 - `structured_return({ command: "gradle test --tests 'com.example.FooTest'", parseAs: "junit-xml", artifactPaths: ["build/test-results/test/TEST-*.xml"] })` — single class; glob still works (matches the one file)
-- For multi-module projects: `structured_return({ command: "gradle :module:test", parseAs: "junit-xml", artifactPaths: ["module/build/test-results/test/TEST-*.xml"] })` — scope the glob to the module's build dir
+- For multi-module projects, use `*` in directory positions to match across modules: `structured_return({ command: "gradle test", parseAs: "junit-xml", artifactPaths: ["*/build/test-results/test/TEST-*.xml"] })` — or scope to one module: `structured_return({ command: "gradle :module:test", parseAs: "junit-xml", artifactPaths: ["module/build/test-results/test/TEST-*.xml"] })`
 
 #### Maven
 
 Maven Surefire writes one XML per test class — same as Gradle. Always use a glob pattern.
 
 - `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["target/surefire-reports/TEST-*.xml"] })` — full test suite; any maven args (e.g. `-pl module`, `-Dtest=ClassName`) go before `test`
-- For multi-module projects: `structured_return({ command: "mvn test -pl module", parseAs: "junit-xml", artifactPaths: ["module/target/surefire-reports/TEST-*.xml"] })` — scope the glob to the module
+- For multi-module projects, use `*` in directory positions: `structured_return({ command: "mvn test", parseAs: "junit-xml", artifactPaths: ["*/target/surefire-reports/TEST-*.xml"] })` — or scope to one module: `structured_return({ command: "mvn test -pl module", parseAs: "junit-xml", artifactPaths: ["module/target/surefire-reports/TEST-*.xml"] })`
 
 #### .NET / xUnit
 
