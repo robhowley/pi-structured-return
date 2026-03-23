@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { globSync } from "glob";
 import { Type } from "@sinclair/typebox";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
@@ -104,7 +105,11 @@ export default function structuredReturn(pi: ExtensionAPI) {
       const argv = shellSplit(args.command);
       const { stdout, stderr, exitCode } = await runCommand(args.command, cwd);
       const logs = writeRunArtifacts(runDir, runId, stdout, stderr);
-      const artifactPaths = (args.artifactPaths ?? []).map((p) => (path.isAbsolute(p) ? p : path.join(cwd, p)));
+      const artifactPaths = (args.artifactPaths ?? []).flatMap((p) => {
+        const resolved = path.isAbsolute(p) ? p : path.join(cwd, p);
+        const expanded = globSync(resolved);
+        return expanded.length > 0 ? expanded.sort() : [resolved];
+      });
       const runCtx: RunContext = {
         command: args.command,
         argv,
