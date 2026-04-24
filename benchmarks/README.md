@@ -122,6 +122,42 @@ dotnet test
 structured_return({ command: "dotnet test --logger \"junit;LogFilePath=.tmp/report.xml\"", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
 ```
 
+### phpunit / junit-xml
+
+Setup (run once from `test-runners/phpunit/`):
+
+```bash
+cd test-runners/phpunit && composer install
+```
+
+Run both commands from `test-runners/phpunit/`:
+
+```bash
+# raw
+./vendor/bin/phpunit
+
+# structured
+structured_return({ command: "./vendor/bin/phpunit --log-junit .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
+```
+
+### pest / junit-xml
+
+Setup (run once from `test-runners/pest/`):
+
+```bash
+cd test-runners/pest && composer install
+```
+
+Run both commands from `test-runners/pest/`:
+
+```bash
+# raw
+./vendor/bin/pest tests/MathTest.php
+
+# structured
+structured_return({ command: "./vendor/bin/pest tests/MathTest.php --log-junit=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
+```
+
 ### maven / junit-xml
 
 Setup (run once from `test-runners/maven/` to pull dependencies):
@@ -157,6 +193,26 @@ npx jest
 # structured
 structured_return({ command: "JEST_JUNIT_OUTPUT_FILE=.tmp/junit.xml npx jest --reporters=jest-junit", parseAs: "junit-xml", artifactPaths: [".tmp/junit.xml"] })
 ```
+
+### playwright / junit-xml
+
+Setup (run once from `test-runners/playwright/`):
+
+```bash
+cd test-runners/playwright && npm install
+```
+
+Run both commands from `test-runners/playwright/`:
+
+```bash
+# raw
+npx playwright test math.test.ts
+
+# structured
+structured_return({ command: "PLAYWRIGHT_JUNIT_OUTPUT_FILE=.tmp/report.xml npx playwright test math.test.ts --reporter=junit", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })
+```
+
+Note: Uses pure `@playwright/test` assertions without browser/page — no browser download needed.
 
 ### cargo test
 

@@ -5,6 +5,7 @@ A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside
 A failing test run, before and after:
 
 **Raw pytest output (262 tokens):**
+
 ```
 ============================= test session starts ==============================
 platform darwin -- Python 3.14.2, pytest-9.0.2
@@ -37,6 +38,7 @@ FAILED test_math.py::test_does_not_divide_by_zero - ZeroDivisionError: ...
 ```
 
 **Structured result returned to the model (56 tokens):**
+
 ```
 pytest test_math.py --junitxml=.tmp/report.xml → cwd: project
 2 failed, 1 passed
@@ -64,66 +66,69 @@ Measured with `cl100k_base` (tiktoken). All benchmarks use tiny fixtures — red
 
 Benchmark: 3 tests — 1 passing, 1 assertion failure, 1 unexpected error.
 
-| Tool | Raw | Structured | Reduction | Notes |
-|---|---|---|---|---|
-| `mvn test` | 1063 | 86 | **92%** | build lifecycle noise with surefire stack traces per failure |
-| `node --test` | 629 | 64 | **90%** | strips full stack traces, assertion internals, timing; preserves expected/actual |
-| `npx ava` | 483 | 56 | **88%** | source snippets, diffs, full stack traces stripped; expected/actual preserved |
-| `go test` | 394 | 48 | **88%** | stack traces, goroutine frames, panic recovery noise stripped; file:line + expected/actual preserved |
-| `dotnet test` | 487 | 107 | **78%** | build header and VSTest output with per-failure stack traces |
-| `npx vitest` | 348 | 75 | **78%** | source diff with inline arrows and ANSI color codes per failure |
-| `python -m unittest` | 231 | 52 | **78%** | full tracebacks with source annotations; expected/actual from AssertionError |
-| `cargo test` | 285 | 68 | **76%** | cargo progress + test binary output with panic traces per failure |
-| `pytest` | 289 | 71 | **75%** | verbose output with source snippets and summary footer |
-| `rspec` | 212 | 55 | **74%** | default output with backtrace |
-| `gradle test` | 263 | 81 | **69%** | gradle console output with build lifecycle noise |
-| `npx mocha` | 180 | 55 | **69%** | stack traces + assertion diff formatting; expected/actual preserved |
-| `npx jest` | 309 | 99 | **68%** | source annotations with deep jest-circus stack traces per failure |
-| `ruby` (minitest) | 168 | 59 | **65%** | default output with backtrace |
+| Tool                  | Raw  | Structured | Reduction | Notes                                                                                                            |
+| --------------------- | ---- | ---------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
+| `mvn test`            | 1063 | 86         | **92%**   | build lifecycle noise with surefire stack traces per failure                                                     |
+| `node --test`         | 629  | 64         | **90%**   | strips full stack traces, assertion internals, timing; preserves expected/actual                                 |
+| `npx ava`             | 483  | 56         | **88%**   | source snippets, diffs, full stack traces stripped; expected/actual preserved                                    |
+| `go test`             | 394  | 48         | **88%**   | stack traces, goroutine frames, panic recovery noise stripped; file:line + expected/actual preserved             |
+| `npx playwright test` | 542  | 91         | **83%**   | ANSI output, attachment paths, source snippets, and stack traces stripped; file:line + expected/actual preserved |
+| `pest`                | 382  | 81         | **79%**   | source snippets, test-name prefixes, and repeated file refs stripped; file:line preserved                        |
+| `dotnet test`         | 487  | 107        | **78%**   | build header and VSTest output with per-failure stack traces                                                     |
+| `npx vitest`          | 348  | 75         | **78%**   | source diff with inline arrows and ANSI color codes per failure                                                  |
+| `python -m unittest`  | 231  | 52         | **78%**   | full tracebacks with source annotations; expected/actual from AssertionError                                     |
+| `cargo test`          | 285  | 68         | **76%**   | cargo progress + test binary output with panic traces per failure                                                |
+| `pytest`              | 289  | 71         | **75%**   | verbose output with source snippets and summary footer                                                           |
+| `phpunit`             | 288  | 75         | **74%**   | method headers and absolute paths stripped; body file:line preferred over tc.line                                |
+| `rspec`               | 212  | 55         | **74%**   | default output with backtrace                                                                                    |
+| `gradle test`         | 263  | 81         | **69%**   | gradle console output with build lifecycle noise                                                                 |
+| `npx mocha`           | 180  | 55         | **69%**   | stack traces + assertion diff formatting; expected/actual preserved                                              |
+| `npx jest`            | 309  | 99         | **68%**   | source annotations with deep jest-circus stack traces per failure                                                |
+| `ruby` (minitest)     | 168  | 59         | **65%**   | default output with backtrace                                                                                    |
 
 ### Build tools and compilers
 
 Benchmark: 1 file, 1–2 errors. Reduction scales with error count since raw output includes source snippets, caret indicators, and annotations per error.
 
-| Tool | Raw | Structured | Reduction | Notes |
-|---|---|---|---|---|
-| `dotnet build` | 383 | 53 | **86%** | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
-| `npx jsonlint` | 148 | 28 | **81%** | strips stack trace, source pointer line; preserves line number and expecting message |
-| `tidy` | 233 | 51 | **78%** | strips remediation advice, accessibility tips, reformatted HTML output, Info lines |
-| `cargo build` | 225 | 77 | **66%** | rustc error annotations with code spans and help text per error |
-| `swiftc` | 161 | 58 | **64%** | source annotations with backtick markers deduplicated |
-| `gcc` / `clang` | 109 | 77 | **29%** | strips source snippets, caret indicators, line numbers from gutter |
-| `javac` | 79 | 66 | **16%** | strips source snippets, caret indicators; folds symbol/location into message |
+| Tool            | Raw | Structured | Reduction | Notes                                                                                      |
+| --------------- | --- | ---------- | --------- | ------------------------------------------------------------------------------------------ |
+| `dotnet build`  | 383 | 53         | **86%**   | strips restore/timing noise, deduplicates repeated error lines, absolute paths relativized |
+| `npx jsonlint`  | 148 | 28         | **81%**   | strips stack trace, source pointer line; preserves line number and expecting message       |
+| `tidy`          | 233 | 51         | **78%**   | strips remediation advice, accessibility tips, reformatted HTML output, Info lines         |
+| `cargo build`   | 225 | 77         | **66%**   | rustc error annotations with code spans and help text per error                            |
+| `swiftc`        | 161 | 58         | **64%**   | source annotations with backtick markers deduplicated                                      |
+| `gcc` / `clang` | 109 | 77         | **29%**   | strips source snippets, caret indicators, line numbers from gutter                         |
+| `javac`         | 79  | 66         | **16%**   | strips source snippets, caret indicators; folds symbol/location into message               |
 
 ### Linters and type checkers
 
 Benchmark: 1 file, 1–2 violations. Reduction is a conservative lower bound — scales with file and error count since raw output repeats paths, source snippets, and annotations per violation.
 
-| Tool | Raw | Structured | Reduction | Notes |
-|---|---|---|---|---|
-| `isort --check` | 143 | 29 | **80%** | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
-| `black --check` | 155 | 31 | **80%** | strips diff hunks, emoji, timestamps; lists files needing reformatting |
-| `ruff check` | 107 | 52 | **51%** | source context + help text per error |
-| `shellcheck` | 224 | 117 | **48%** | strips source snippets, carets, suggestions, wiki URLs |
-| `npx htmlhint` | 174 | 92 | **47%** | strips ANSI codes, source evidence, rule descriptions, URLs |
-| `vale` | 141 | 79 | **44%** | strips ANSI codes, Action/Span metadata, column-aligned formatting |
-| `markdownlint` | 199 | 117 | **41%** | strips context quotes, URLs, fix info, error ranges |
-| `pyright` | 100 | 59 | **41%** | strips version, timing, absolute paths; detail lines collapsed |
-| `rubocop` | 149 | 90 | **40%** | strips source snippets, caret indicators, summary line |
-| `tsc` | 107 | 72 | **33%** | vs `--pretty true` default; source snippets and underlines stripped |
-| `stylelint` | 70 | 51 | **27%** | strips summary footer and fix hint |
-| `pylint` | 141 | 120 | **15%** | strips header, score line, separator; scales with error count |
-| `prettier --check` | 38 | 33 | **13%** | strips preamble, [warn] prefixes, footer hint; scales with file count |
-| `hadolint` | 178 | 156 | **12%** | strips ANSI color codes and level labels; measured vs colored output |
-| `eslint` | 64 | 59 | **8%** | already compact formatter |
-| `mypy` | 75 | 72 | **4%** | mypy text is already compact; notes folded into parent errors |
+| Tool               | Raw | Structured | Reduction | Notes                                                                            |
+| ------------------ | --- | ---------- | --------- | -------------------------------------------------------------------------------- |
+| `isort --check`    | 143 | 29         | **80%**   | strips diff hunks, absolute paths, timestamps; lists files with unsorted imports |
+| `black --check`    | 155 | 31         | **80%**   | strips diff hunks, emoji, timestamps; lists files needing reformatting           |
+| `ruff check`       | 107 | 52         | **51%**   | source context + help text per error                                             |
+| `shellcheck`       | 224 | 117        | **48%**   | strips source snippets, carets, suggestions, wiki URLs                           |
+| `npx htmlhint`     | 174 | 92         | **47%**   | strips ANSI codes, source evidence, rule descriptions, URLs                      |
+| `vale`             | 141 | 79         | **44%**   | strips ANSI codes, Action/Span metadata, column-aligned formatting               |
+| `markdownlint`     | 199 | 117        | **41%**   | strips context quotes, URLs, fix info, error ranges                              |
+| `pyright`          | 100 | 59         | **41%**   | strips version, timing, absolute paths; detail lines collapsed                   |
+| `rubocop`          | 149 | 90         | **40%**   | strips source snippets, caret indicators, summary line                           |
+| `tsc`              | 107 | 72         | **33%**   | vs `--pretty true` default; source snippets and underlines stripped              |
+| `stylelint`        | 70  | 51         | **27%**   | strips summary footer and fix hint                                               |
+| `pylint`           | 141 | 120        | **15%**   | strips header, score line, separator; scales with error count                    |
+| `prettier --check` | 38  | 33         | **13%**   | strips preamble, [warn] prefixes, footer hint; scales with file count            |
+| `hadolint`         | 178 | 156        | **12%**   | strips ANSI color codes and level labels; measured vs colored output             |
+| `eslint`           | 64  | 59         | **8%**    | already compact formatter                                                        |
+| `mypy`             | 75  | 72         | **4%**    | mypy text is already compact; notes folded into parent errors                    |
 
 ### Security and audit
 
-| Tool | Raw | Structured | Reduction | Notes |
-|---|---|---|---|---|
-| `bandit` | 402 | 99 | **75%** | strips source snippets, CWE URLs, run metrics, confidence labels |
-| `npm audit` | 158 | 50 | **68%** | strips advisory URLs, fix instructions, CVSS vectors; advisory titles joined per package |
+| Tool        | Raw | Structured | Reduction | Notes                                                                                    |
+| ----------- | --- | ---------- | --------- | ---------------------------------------------------------------------------------------- |
+| `bandit`    | 402 | 99         | **75%**   | strips source snippets, CWE URLs, run metrics, confidence labels                         |
+| `npm audit` | 158 | 50         | **68%**   | strips advisory URLs, fix instructions, CVSS vectors; advisory titles joined per package |
 
 ### Pipeline tools
 
@@ -131,12 +136,12 @@ dbt output is the noisiest tool in this repo relative to useful signal. Every ru
 
 The numbers below use 3–4 model toy examples; real projects run hundreds of models where the noise scales linearly and reduction compounds.
 
-| Tool | Raw | Structured | Reduction | Notes |
-|---|---|---|---|---|
-| `dbt run` (success) | 428 | 20 | **95%** | version, adapter, concurrency, per-model start/finish — all noise on success |
-| `dbt run` (failure) | 618 | 198 | **68%** | error messages, model paths, compiled code paths preserved |
-| `dbt test` | 720 | 274 | **62%** | unit test diff tables preserved verbatim; preamble stripped |
-| `dbt compile` | 775 | 683 | **12%** | compiled SQL is the signal and returned verbatim |
+| Tool                | Raw | Structured | Reduction | Notes                                                                        |
+| ------------------- | --- | ---------- | --------- | ---------------------------------------------------------------------------- |
+| `dbt run` (success) | 428 | 20         | **95%**   | version, adapter, concurrency, per-model start/finish — all noise on success |
+| `dbt run` (failure) | 618 | 198        | **68%**   | error messages, model paths, compiled code paths preserved                   |
+| `dbt test`          | 720 | 274        | **62%**   | unit test diff tables preserved verbatim; preamble stripped                  |
+| `dbt compile`       | 775 | 683        | **12%**   | compiled SQL is the signal and returned verbatim                             |
 
 At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 → 20 tokens (99%).
 
@@ -144,15 +149,15 @@ At 12 models, run failures hit 85% reduction. An 18-model DAG success: 1,645 →
 
 Evaluated for structured parsing but raw output is already compact enough that a parser adds no reduction (or goes negative). Use `bash` instead of `structured_return` for these tools.
 
-| Tool | Raw tokens | Format | Why no parser |
-|---|---|---|---|
-| `go build` | 85 | `file:line:col: message` | one line per error, no decoration |
-| `flake8` | 75 | `file:line:col: CODE message` | no JSON without a plugin; text is already one line per violation |
-| `yamllint` | 72 | `file:line:col level message (rule)` | filename printed once; one line per issue |
-| `golangci-lint` | 59 | `file:line:col: message (linter)` | text output already minimal; JSON includes massive linter report |
-| `go vet` | ~60 | `file:line:col: message` | same format as `go build` |
-| `vulture` | 58 | `file:line: message (confidence%)` | single line per finding |
-| `pydocstyle` | 48 | `file:line context + CODE: message` | two lines per issue; structured format would repeat file paths |
+| Tool            | Raw tokens | Format                               | Why no parser                                                    |
+| --------------- | ---------- | ------------------------------------ | ---------------------------------------------------------------- |
+| `go build`      | 85         | `file:line:col: message`             | one line per error, no decoration                                |
+| `flake8`        | 75         | `file:line:col: CODE message`        | no JSON without a plugin; text is already one line per violation |
+| `yamllint`      | 72         | `file:line:col level message (rule)` | filename printed once; one line per issue                        |
+| `golangci-lint` | 59         | `file:line:col: message (linter)`    | text output already minimal; JSON includes massive linter report |
+| `go vet`        | ~60        | `file:line:col: message`             | same format as `go build`                                        |
+| `vulture`       | 58         | `file:line: message (confidence%)`   | single line per finding                                          |
+| `pydocstyle`    | 48         | `file:line context + CODE: message`  | two lines per issue; structured format would repeat file paths   |
 
 ## How it works
 
@@ -220,7 +225,12 @@ export default {
       tool: "foo-cli",
       status: data.ok ? "pass" : "fail",
       summary: data.ok ? "passed" : `${data.errors.length} errors`,
-      failures: data.errors.map((e, i) => ({ id: e.id ?? `error-${i}`, file: e.file, line: e.line, message: e.message })),
+      failures: data.errors.map((e, i) => ({
+        id: e.id ?? `error-${i}`,
+        file: e.file,
+        line: e.line,
+        message: e.message,
+      })),
       logPath: ctx.logPath,
     };
   },
@@ -233,13 +243,13 @@ The parser receives a `RunContext` (command, argv, cwd, stdout/stderr paths, art
 
 Every parser returns the same shape. The model always knows where to look.
 
-| Field | Type | Description |
-|---|---|---|
-| `tool` | `string` | Name of the tool that ran (`eslint`, `pytest`, etc.) |
-| `exitCode` | `number` | Raw process exit code |
-| `status` | `pass \| fail \| error` | Normalized outcome |
-| `summary` | `string` | One-line human+model readable result (`3 failed, 12 passed`) |
-| `cwd` | `string` | Working directory — anchor for resolving relative paths in failures |
-| `failures` | `{ id, file?, line?, message?, rule? }[]` | Per-failure details with relative file paths |
-| `logPath` | `string` | Path to full stdout+stderr log |
-| `rawTail` | `string?` | Last 200 lines of log, included on fallback when no parser matched |
+| Field      | Type                                      | Description                                                         |
+| ---------- | ----------------------------------------- | ------------------------------------------------------------------- |
+| `tool`     | `string`                                  | Name of the tool that ran (`eslint`, `pytest`, etc.)                |
+| `exitCode` | `number`                                  | Raw process exit code                                               |
+| `status`   | `pass \| fail \| error`                   | Normalized outcome                                                  |
+| `summary`  | `string`                                  | One-line human+model readable result (`3 failed, 12 passed`)        |
+| `cwd`      | `string`                                  | Working directory — anchor for resolving relative paths in failures |
+| `failures` | `{ id, file?, line?, message?, rule? }[]` | Per-failure details with relative file paths                        |
+| `logPath`  | `string`                                  | Path to full stdout+stderr log                                      |
+| `rawTail`  | `string?`                                 | Last 200 lines of log, included on fallback when no parser matched  |
