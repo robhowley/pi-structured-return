@@ -111,6 +111,21 @@ describe("readLifetimeStats", () => {
     expect(stats.runs).toBe(2);
     expect(stats.rawBytes).toBe(3000);
   });
+
+  it("can filter lifetime stats by cwd", () => {
+    const statsDir = path.join(tempDir, ".pi");
+    fs.mkdirSync(statsDir, { recursive: true });
+
+    const content = [
+      JSON.stringify({ rawBytes: 1000, parsedBytes: 100, cwd: "/repo/a" }),
+      JSON.stringify({ rawBytes: 2000, parsedBytes: 200, cwd: "/repo/b" }),
+      JSON.stringify({ rawBytes: 3000, parsedBytes: 300, cwd: "/repo/a" }),
+    ].join("\n");
+    fs.writeFileSync(path.join(statsDir, "structured-return-stats.000.jsonl"), content + "\n");
+
+    const stats = readLifetimeStats({ cwd: "/repo/a" });
+    expect(stats).toEqual({ runs: 2, rawBytes: 4000, parsedBytes: 400 });
+  });
 });
 
 describe("formatBytes", () => {

@@ -161,9 +161,9 @@ Evaluated for structured parsing but raw output is already compact enough that a
 3. A parser converts noisy CLI output into a compact structured result. If no parser matches, the last 200 lines and the log path are returned as a fallback.
 4. The agent receives the structured result in context — signal only, no noise.
 5. The full log is always available on disk for both the agent and humans to inspect.
-6. Run `/sr-stats` to see how many tokens structured-return has saved — both in the current session and across all sessions.
+6. Run `/sr-stats` to see how many tokens structured-return has saved — for the current session, the current working directory, and lifetime across all sessions.
 
-Run `/sr-parsers` in a pi session to see all registered parsers with their match rules. Run `/sr-stats` to see token savings for the current session and lifetime.
+Run `/sr-parsers` in a pi session to see all registered parsers with their match rules. Run `/sr-stats` to see token savings for the current session, cwd lifetime, and lifetime.
 
 ## Extending with project-local parsers
 
