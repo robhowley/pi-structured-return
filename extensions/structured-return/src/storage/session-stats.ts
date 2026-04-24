@@ -17,6 +17,7 @@ export type StatsEntry = {
   rawBytes: number;
   parsedBytes: number;
   command: string;
+  cwd?: string;
 };
 
 export type AggregatedStats = {
@@ -72,8 +73,8 @@ export function appendRun(entry: StatsEntry): void {
   fs.appendFileSync(filePath, line);
 }
 
-/** Read and aggregate all stats files for lifetime totals. */
-export function readLifetimeStats(): AggregatedStats {
+/** Read and aggregate all stats files for lifetime totals, optionally filtered by cwd. */
+export function readLifetimeStats(opts: { cwd?: string } = {}): AggregatedStats {
   const files = listStatsFiles();
   const totals: AggregatedStats = { runs: 0, rawBytes: 0, parsedBytes: 0 };
 
@@ -83,6 +84,7 @@ export function readLifetimeStats(): AggregatedStats {
       if (!line.trim()) continue;
       try {
         const entry: StatsEntry = JSON.parse(line);
+        if (opts.cwd && entry.cwd !== opts.cwd) continue;
         totals.runs++;
         totals.rawBytes += entry.rawBytes;
         totals.parsedBytes += entry.parsedBytes;

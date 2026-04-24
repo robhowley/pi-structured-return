@@ -45,15 +45,25 @@ export default function structuredReturn(pi: ExtensionAPI) {
   });
 
   pi.registerCommand("sr-stats", {
-    description: "Show token savings from structured-return (current session + lifetime)",
+    description: "Show token savings from structured-return (current session + cwd lifetime + lifetime)",
     handler: async (_args, ctx) => {
+      const currentCwd = ctx.cwd ?? process.cwd();
+
       // Current session: walk session entries for our tool results
       const sessionStats: AggregatedStats = { runs: 0, rawBytes: 0, parsedBytes: 0 };
       try {
         const entries = ctx.sessionManager?.getEntries?.() ?? [];
         for (const entry of entries) {
           if (entry.type !== "message") continue;
-          const msg = (entry as any).message;
+          const msg = (
+            entry as {
+              message?: {
+                role?: string;
+                toolName?: string;
+                details?: { rawBytes?: number; parsedBytes?: number };
+              };
+            }
+          ).message;
           if (msg?.role !== "toolResult" || msg?.toolName !== "structured_return") continue;
           const details = msg.details;
           if (details?.rawBytes != null && details?.parsedBytes != null) {
@@ -66,11 +76,15 @@ export default function structuredReturn(pi: ExtensionAPI) {
         // session access may fail in some modes
       }
 
+      const cwdLifetime = readLifetimeStats({ cwd: currentCwd });
+
       // Lifetime: read all JSONL files
       const lifetime = readLifetimeStats();
 
       const lines: string[] = ["structured-return stats", ""];
       lines.push(...formatStatsBlock("session", sessionStats));
+      lines.push("");
+      lines.push(...formatStatsBlock("cwd lifetime", cwdLifetime));
       lines.push("");
       lines.push(...formatStatsBlock("lifetime", lifetime));
 
@@ -129,6 +143,7 @@ export default function structuredReturn(pi: ExtensionAPI) {
           rawBytes,
           parsedBytes,
           command: stripCdPrefix(args.command),
+          cwd,
         });
       } catch {
         // stats are best-effort — never block the tool result
