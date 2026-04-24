@@ -25,119 +25,155 @@ Prefer better output at the source.
 ## Examples
 
 ### pytest
+
 - `structured_return({ command: "pytest [any pytest args] --junitxml=.tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — `--junitxml` is built into pytest, no extra dependencies needed; scope, filters, markers, etc. go in `[any pytest args]`
 
 ### ruff check
+
 - `structured_return({ command: "ruff check [any ruff args] --output-format=json", parseAs: "ruff-json" })` — scope, selects, ignores, etc. go in `[any ruff args]`
 
 ### mypy
+
 - `structured_return({ command: "mypy [any mypy args] --output json", parseAs: "mypy-json" })` — `--output json` is built into mypy (1.0+); outputs NDJSON to stderr with file, line, column, message, error code, and severity; notes are folded into their parent error's message
 
 ### htmlhint
+
 - `structured_return({ command: "npx htmlhint --format json [any htmlhint args]", parseAs: "htmlhint-json" })` — `--format json` outputs structured array; strips ANSI codes, source evidence, rule descriptions, and URLs
 
 ### isort
+
 - `structured_return({ command: "isort --check --diff [any isort args]", parseAs: "isort-text" })` — parses `--check` output; strips diff hunks, absolute paths, timestamps; lists files with unsorted imports
 
 ### npm audit
+
 - `structured_return({ command: "npm audit --json", parseAs: "npm-audit-json" })` — `--json` is built into npm; strips advisory URLs, CVSS vectors, fix instructions; advisory titles joined per package; severity breakdown in summary
 
 ### jsonlint
+
 - `structured_return({ command: "npx jsonlint [file]", parseAs: "jsonlint-text" })` — strips stack trace and source pointer; extracts line number and "Expecting X, got Y" message
 
 ### tidy (HTML Tidy)
+
 - `structured_return({ command: "tidy -errors [any tidy args]", parseAs: "tidy-text" })` — parses `line N column N - Warning/Error: message` from stderr; strips remediation advice, accessibility tips, reformatted HTML output, and Info lines
 
 ### vale
+
 - `structured_return({ command: "vale --output JSON [any vale args]", parseAs: "vale-json" })` — `--output JSON` is built into vale; strips ANSI codes, Action/Span metadata, column-aligned formatting; severity breakdown in summary
 
 ### prettier
+
 - `structured_return({ command: "prettier --check [any prettier args]", parseAs: "prettier-text" })` — parses `--check` output; strips "Checking formatting..." preamble, [warn] prefixes, and "Run Prettier with --write to fix" footer
 
 ### markdownlint
+
 - `structured_return({ command: "markdownlint --json [any markdownlint args]", parseAs: "markdownlint-json" })` — `--json` outputs structured array; strips context quotes, rule info URLs, fix info, and error ranges; error details folded into description
 
 ### black
+
 - `structured_return({ command: "black --check [any black args]", parseAs: "black-text" })` — parses `--check` output; strips diff hunks, emoji banners, timestamps; lists files needing reformatting; also handles `--check --diff` mode
 
 ### bandit
+
 - `structured_return({ command: "bandit -f json [any bandit args]", parseAs: "bandit-json" })` — `-f json` is built into bandit; strips source snippets, CWE URLs, run metrics, and confidence labels; severity breakdown in summary
 
 ### gcc / clang
+
 - `structured_return({ command: "gcc -c [any gcc args]", parseAs: "clang-text" })` — works with gcc, g++, clang, clang++; parses `file:line:col: error: message` from stderr; source snippets and caret indicators stripped; warning flags preserved as rule
 
 ### dotnet build
+
 - `structured_return({ command: "dotnet build [any dotnet args]", parseAs: "dotnet-build-text" })` — parses MSBuild `file(line,col): error CODE: message` format; strips restore/timing noise; deduplicates the inline+summary error repetition; absolute paths relativized
 
 ### javac
+
 - `structured_return({ command: "javac [any javac args]", parseAs: "javac-text" })` — parses `file:line: error: message` from stderr; source snippets and caret indicators stripped; `cannot find symbol` errors fold the symbol continuation line into the message
 
 ### pyright
+
 - `structured_return({ command: "pyright --outputjson [any pyright args]", parseAs: "pyright-json" })` — `--outputjson` is built into pyright; JSON output includes file, line, message, and rule code; multi-line detail messages collapsed; warnings excluded from failures
 
 ### tsc
+
 - `structured_return({ command: "tsc --noEmit --pretty false [any tsc args]", parseAs: "tsc-text" })` — `--pretty false` suppresses source snippets and ANSI codes; parser extracts file, line, TS error code, and message from the compact `file(line,col): error TSXXXX: message` format
 
 ### pylint
+
 - `structured_return({ command: "pylint [any pylint args] --output-format=json", parseAs: "pylint-json" })` — `--output-format=json` is built into pylint; rule includes both message-id and symbol name (e.g. `W0612(unused-variable)`)
 
 ### shellcheck
+
 - `structured_return({ command: "shellcheck [any shellcheck args] --format=json", parseAs: "shellcheck-json" })` — `--format=json` is built into shellcheck; strips source snippets, caret indicators, "Did you mean" suggestions, and wiki URLs
 
 ### rubocop
+
 - `structured_return({ command: "rubocop [any rubocop args] --format json", parseAs: "rubocop-json" })` — `--format json` is built into rubocop; cop name prefix stripped from messages; source snippets and caret indicators removed
 
 ### swiftc
+
 - `structured_return({ command: "swiftc -typecheck [any swiftc args]", parseAs: "swiftc-text" })` — parses `file:line:col: error: message` from stderr; source annotations and duplicate error lines deduplicated; warnings filtered out
 
 ### hadolint
+
 - `structured_return({ command: "hadolint [any hadolint args] --format json", parseAs: "hadolint-json" })` — `--format json` is built into hadolint; strips ANSI color codes and level labels from text output
 
 ### stylelint
+
 - `structured_return({ command: "stylelint [any stylelint args] --formatter json", parseAs: "stylelint-json" })` — `--formatter json` is built into stylelint; rule name suffix stripped from message text; requires a `.stylelintrc` config
 
 ### node --test
+
 - `structured_return({ command: "node --test [any node test args]", parseAs: "node-test-text" })` — parses the default spec reporter output; strips full stack traces, assertion error internals, timing data; preserves expected/actual values from assertion failures
 
 ### ava
+
 - `structured_return({ command: "npx ava [any ava args] --no-color", parseAs: "ava-text" })` — parses default text output from stderr; assertion failures extract expected/actual from diff lines and file:line; runtime errors extract message and file:line from stack trace
 
 ### mocha
+
 - `structured_return({ command: "mocha [any mocha args] --reporter json", parseAs: "mocha-json" })` — `--reporter json` is built into mocha; assertion failures surface explicit expected/actual values; runtime errors surface message and file:line from stack trace
 
 ### Python unittest
+
 - `structured_return({ command: "python3 -m unittest [any unittest args]", parseAs: "unittest-text" })` — no special flags needed; parses the default verbose traceback output from stderr; assertion messages extracted from `AssertionError` lines; file:line from traceback frames
 
 ### go test
+
 - `structured_return({ command: "go test -json [any go test args]", parseAs: "go-test-json" })` — `-json` is built into `go test`; NDJSON output; assertion failures extract file:line and message from `t.Error`/`t.Errorf` output; panics extract message and user-code file:line from stack trace; 97% reduction vs raw NDJSON
 
 ### vitest
+
 - `structured_return({ command: "vitest run [any vitest args] --reporter=json", parseAs: "vitest-json" })` — file paths, filters, etc. go in `[any vitest args]`
 
 ### eslint
+
 - `structured_return({ command: "eslint [any eslint args] -f json", parseAs: "eslint-json" })` — paths, configs, rules, etc. go in `[any eslint args]`
 
 ### rspec
+
 - `structured_return({ command: "bundle exec rspec [any rspec args] --format json", parseAs: "rspec-json" })` — `--format json` is required; without it output is not parseable
 
 ### minitest
+
 - `structured_return({ command: "ruby [any minitest args]", parseAs: "minitest-text" })` — no format flags needed; works with plain ruby invocation
 
 ### dbt (run, test, compile)
+
 - `structured_return({ command: "dbt run [any dbt args] --log-format json", parseAs: "dbt-json" })` — `--log-format json` required; model selectors, flags, etc. go in `[any dbt args]`
 - `structured_return({ command: "dbt test [any dbt args] --log-format json", parseAs: "dbt-json" })` — same parser handles run and test; unit test diffs preserved verbatim
 - `structured_return({ command: "dbt compile [any dbt args] --log-format json", parseAs: "dbt-json" })` — returns compiled SQL; preamble stripped
 
 ### cargo build
+
 - `structured_return({ command: "cargo build --message-format=json", parseAs: "cargo-build" })` — `--message-format=json` is built into cargo; errors include file, line, error code (E0308 etc.), and primary span label (expected X, found Y); warnings are filtered out
 
 ### cargo test
+
 - `structured_return({ command: "cargo test", parseAs: "cargo-test" })` — no extra flags needed; assertion failures surface left/right values and file:line; panics surface the message and file:line; if compilation fails, the summary says so and tells the model to run `cargo build --message-format=json` for structured errors
 - `structured_return({ command: "cargo test [filter]", parseAs: "cargo-test" })` — filter by test name substring, module path, or `--test integration_test_name`
 
 ### junit-xml
 
-JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.
+JUnit XML is the de facto standard output format across the JVM ecosystem and many others — Maven, Gradle, pytest (`--junitxml`), Playwright (`--reporter=junit`), PHPUnit/Pest (`--log-junit`), Go (`go-junit-report`), .NET (`--logger trx` with conversion), Jest (`jest-junit`), and more. If a tool can emit JUnit XML, `junit-xml` covers it without a custom parser.
 
 `artifactPaths` supports glob patterns — the parser aggregates results across all matching files. Use globs for tools that write one XML per test class (Gradle, Maven/Surefire). Use a single path for tools that write one consolidated file (pytest, Jest, etc.).
 
@@ -170,6 +206,24 @@ Maven Surefire writes one XML per test class — same as Gradle. Always use a gl
 Jest requires the `jest-junit` reporter (`npm install --save-dev jest-junit`). Pass it via `--reporters` on the CLI — no permanent config change needed.
 
 - `structured_return({ command: "jest [any jest args] --reporters=jest-junit", parseAs: "junit-xml", artifactPaths: [".tmp/junit.xml"] })` — set `JEST_JUNIT_OUTPUT_FILE=.tmp/junit.xml` or configure `outputFile` in `jest-junit` config; file paths, `--testPathPattern`, etc. go in `[any jest args]`
+
+#### Playwright
+
+Playwright has a built-in JUnit reporter. Set the output file inline so `junit-xml` has a concrete artifact to parse.
+
+- `structured_return({ command: "PLAYWRIGHT_JUNIT_OUTPUT_FILE=.tmp/report.xml playwright test [any playwright args] --reporter=junit", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — built-in JUnit reporter; file paths, `--grep`, project names, and shard flags go in `[any playwright args]`
+
+#### PHPUnit
+
+PHPUnit writes JUnit XML directly via `--log-junit`.
+
+- `structured_return({ command: "vendor/bin/phpunit [any phpunit args] --log-junit .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — built-in JUnit logging; test paths, `--filter`, and suite selection flags go in `[any phpunit args]`
+
+#### Pest
+
+Pest supports the same JUnit XML logging flag as PHPUnit.
+
+- `structured_return({ command: "vendor/bin/pest [any pest args] --log-junit .tmp/report.xml", parseAs: "junit-xml", artifactPaths: [".tmp/report.xml"] })` — built-in JUnit logging; file paths, `--filter`, and parallelization flags go in `[any pest args]`
 
 #### Swift / XCTest (Swift Package Manager)
 
