@@ -194,6 +194,11 @@ function resolveFile(tc: JUnitTestCase, suite: JUnitTestSuite, cwd: string): str
   return resolveClassnameFile(tc.classname);
 }
 
+function isPhpFile(candidate?: string): boolean {
+  if (!candidate) return false;
+  return candidate.split("::")[0].replace(/\\/g, "/").endsWith(".php");
+}
+
 /** Recursively collect all testsuites including nested ones (PHPUnit/Pest style). */
 function flattenSuites(suites: JUnitTestSuite[]): JUnitTestSuite[] {
   const result: JUnitTestSuite[] = [];
@@ -244,9 +249,14 @@ const parser: ParserModule = {
             (tc.file ?? suite.file)
               ? resolveFile(tc, suite, ctx.cwd)
               : (bodyLocation?.file ?? panicInfo?.file ?? resolveFile(tc, suite, ctx.cwd));
-          // Prefer body-extracted line (actual failure location) over tc.line (method definition).
-          // PHPUnit provides tc.line but it's the method start, not the failure line.
-          const line = bodyLocation?.line ?? panicInfo?.line ?? (tc.line !== undefined ? Number(tc.line) : undefined);
+          const tcLine = tc.line !== undefined ? Number(tc.line) : undefined;
+          // PHPUnit/Pest report tc.line as the test method definition line, not the failure line.
+          // Other JUnit producers historically prefer tc.line when it is present.
+          const preferBodyLine =
+            isPhpFile(file) || isPhpFile(tc.file) || isPhpFile(suite.file) || isPhpFile(bodyLocation?.file);
+          const line = preferBodyLine
+            ? (bodyLocation?.line ?? panicInfo?.line ?? tcLine)
+            : (tcLine ?? bodyLocation?.line ?? panicInfo?.line);
           const id = [file, line, tc.name].filter(Boolean).join(":");
 
           failures.push({

@@ -132,6 +132,20 @@ describe("junit-xml parser", () => {
       expect(result.failures![0].line).toBe(42);
     });
 
+    it("non-php keeps testcase line when the body also has a parseable location", async () => {
+      const xml = `<testsuite name="MathTest" tests="1" failures="0" errors="1">
+        <testcase name="multipliesTwoNumbersCorrectly" classname="MathTest" file="/project/src/test/MyTest.java" line="42" time="0.001">
+          <error message="expected: &lt;99&gt; but was: &lt;12&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <99> but was: <12>
+	at MathTest.multipliesTwoNumbersCorrectly(MyTest.java:13)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+]]></error>
+        </testcase>
+      </testsuite>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.failures![0].file).toBe("src/test/MyTest.java");
+      expect(result.failures![0].line).toBe(42);
+    });
+
     it("file on testsuite (not testcase) → used as fallback", async () => {
       const xml = `<testsuite name="suite" tests="1" failures="1" errors="0" file="src/spec/foo_spec.rb">
         ${FAILING("test_b", "MyTest", "oops")}
@@ -522,6 +536,24 @@ at tests/MathTest.php:5</failure>
       expect(result.status).toBe("fail");
       expect(result.summary).toBe("2 failed, 2 passed");
       expect(result.failures).toHaveLength(2);
+    });
+
+    it("collects direct and nested testcases without double counting", async () => {
+      const xml = `<testsuites>
+        <testsuite name="root" tests="3" failures="2" errors="0">
+          ${FAILING("direct_failure", "RootTest", "direct broke")}
+          <testsuite name="nested" tests="2" failures="1" errors="0">
+            ${PASSING("nested_pass", "NestedTest")}
+            ${FAILING("nested_failure", "NestedTest", "nested broke")}
+          </testsuite>
+        </testsuite>
+      </testsuites>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 1 passed");
+      expect(result.failures).toHaveLength(2);
+      expect(result.failures![0].message).toBe("direct broke");
+      expect(result.failures![1].message).toBe("nested broke");
     });
   });
 
