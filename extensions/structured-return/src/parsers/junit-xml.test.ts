@@ -132,6 +132,20 @@ describe("junit-xml parser", () => {
       expect(result.failures![0].line).toBe(42);
     });
 
+    it("non-php keeps testcase line when the body also has a parseable location", async () => {
+      const xml = `<testsuite name="MathTest" tests="1" failures="0" errors="1">
+        <testcase name="multipliesTwoNumbersCorrectly" classname="MathTest" file="/project/src/test/MyTest.java" line="42" time="0.001">
+          <error message="expected: &lt;99&gt; but was: &lt;12&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <99> but was: <12>
+	at MathTest.multipliesTwoNumbersCorrectly(MyTest.java:13)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+]]></error>
+        </testcase>
+      </testsuite>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.failures![0].file).toBe("src/test/MyTest.java");
+      expect(result.failures![0].line).toBe(42);
+    });
+
     it("file on testsuite (not testcase) → used as fallback", async () => {
       const xml = `<testsuite name="suite" tests="1" failures="1" errors="0" file="src/spec/foo_spec.rb">
         ${FAILING("test_b", "MyTest", "oops")}
@@ -146,6 +160,14 @@ describe("junit-xml parser", () => {
       </testsuite>`;
       const result = await parser.parse(makeCtx(xml));
       expect(result.failures![0].file).toBe("com/example/service/MyTest.java");
+    });
+
+    it("path-like classname with extension is treated as a file, not a java package", async () => {
+      const xml = `<testsuite name="suite" tests="1" failures="1" errors="0">
+        ${FAILING("test_b", "math.test.ts", "oops")}
+      </testsuite>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.failures![0].file).toBe("math.test.ts");
     });
   });
 
@@ -321,6 +343,183 @@ Received: 12
     });
   });
 
+  describe("playwright --reporter=junit output", () => {
+    it("extracts file, line, and message from failure and error elements", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<testsuites id="" name="" tests="3" failures="1" skipped="0" errors="1" time="0.488">
+<testsuite name="math.test.ts" tests="3" failures="1" errors="1" skipped="0" time="0.004">
+<testcase name="basic math › adds two numbers correctly" classname="math.test.ts" time="0.002"></testcase>
+<testcase name="basic math › multiplies two numbers correctly" classname="math.test.ts" time="0.001">
+<failure message="expect(received).toBe(expected) // Object.is equality" type="expect.toBe">
+<![CDATA[  math.test.ts:8:7 › basic math › multiplies two numbers correctly
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 99
+    Received: 12
+
+       7 |
+       8 |   test("multiplies two numbers correctly", () => {
+    >  9 |     expect(3 * 4).toBe(99);
+         |                   ^
+      10 |   });
+        at /project/math.test.ts:9:19
+]]>
+</failure>
+</testcase>
+<testcase name="basic math › does not divide by zero" classname="math.test.ts" time="0.001">
+<error message="Cannot read properties of null (reading &apos;value&apos;)" type="TypeError">
+<![CDATA[  math.test.ts:12:7 › basic math › does not divide by zero
+
+    TypeError: Cannot read properties of null (reading 'value')
+
+      11 |
+      12 |   test("does not divide by zero", () => {
+    > 13 |     const result = (null as unknown as Record<string, number>).value;
+         |                                                                ^
+        at /project/math.test.ts:13:64
+]]>
+</error>
+</testcase>
+</testsuite>
+</testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 1 passed");
+      expect(result.failures![0].file).toBe("math.test.ts");
+      expect(result.failures![0].line).toBe(9);
+      expect(result.failures![0].message).toContain("expect(received).toBe(expected)");
+      expect(result.failures![0].message).toContain("Expected: 99");
+      expect(result.failures![0].message).toContain("Received: 12");
+      expect(result.failures![1].file).toBe("math.test.ts");
+      expect(result.failures![1].line).toBe(13);
+      expect(result.failures![1].message).toBe("Cannot read properties of null (reading 'value')");
+    });
+  });
+
+  describe("phpunit output", () => {
+    it("extracts file:line from body when tc.line is method definition line", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <testsuites>
+          <testsuite name="MathTest" file="/project/MathTest.php" tests="2" assertions="2" errors="0" failures="1">
+            <testcase name="testAddsTwoNumbersCorrectly" file="/project/MathTest.php" line="9" class="MathTest" classname="MathTest" assertions="1" time="0.000"/>
+            <testcase name="testMultipliesTwoNumbersCorrectly" file="/project/MathTest.php" line="14" class="MathTest" classname="MathTest" assertions="1" time="0.001">
+              <failure type="PHPUnit\\Framework\\ExpectationFailedException">MathTest::testMultipliesTwoNumbersCorrectly
+Failed asserting that 12 is identical to 99.
+
+/project/MathTest.php:16</failure>
+            </testcase>
+          </testsuite>
+        </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("1 failed, 1 passed");
+      expect(result.failures![0].file).toBe("MathTest.php");
+      expect(result.failures![0].line).toBe(16);
+      expect(result.failures![0].message).toBe("Failed asserting that 12 is identical to 99.");
+      expect(result.failures![0].rule).toBe("PHPUnit\\Framework\\ExpectationFailedException");
+    });
+
+    it("handles deeply nested testsuites (PHPUnit wraps in 3 levels)", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <testsuites>
+          <testsuite name="phpunit.xml" tests="3" assertions="2" errors="1" failures="1">
+            <testsuite name="default" tests="3" assertions="2" errors="1" failures="1">
+              <testsuite name="MathTest" file="/project/MathTest.php" tests="3" assertions="2" errors="1" failures="1">
+                <testcase name="testAddsTwoNumbersCorrectly" file="/project/MathTest.php" line="9" class="MathTest" classname="MathTest" assertions="1" time="0.000"/>
+                <testcase name="testMultipliesTwoNumbersCorrectly" file="/project/MathTest.php" line="14" class="MathTest" classname="MathTest" assertions="1" time="0.001">
+                  <failure type="PHPUnit\\Framework\\ExpectationFailedException">MathTest::testMultipliesTwoNumbersCorrectly
+Failed asserting that 12 is identical to 99.
+
+/project/MathTest.php:16</failure>
+                </testcase>
+                <testcase name="testDoesNotDivideByZero" file="/project/MathTest.php" line="19" class="MathTest" classname="MathTest" assertions="0" time="0.000">
+                  <error type="DivisionByZeroError">MathTest::testDoesNotDivideByZero
+DivisionByZeroError: Division by zero
+
+/project/MathTest.php:21</error>
+                </testcase>
+              </testsuite>
+            </testsuite>
+          </testsuite>
+        </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 1 passed");
+      expect(result.failures).toHaveLength(2);
+      expect(result.failures![0].file).toBe("MathTest.php");
+      expect(result.failures![0].line).toBe(16);
+      expect(result.failures![1].file).toBe("MathTest.php");
+      expect(result.failures![1].line).toBe(21);
+    });
+
+    it("extracts file:line from error body for exceptions", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <testsuites>
+          <testsuite name="MathTest" file="/project/MathTest.php" tests="1" assertions="0" errors="1" failures="0">
+            <testcase name="testDoesNotDivideByZero" file="/project/MathTest.php" line="19" class="MathTest" classname="MathTest" assertions="0" time="0.000">
+              <error type="DivisionByZeroError">MathTest::testDoesNotDivideByZero
+DivisionByZeroError: Division by zero
+
+/project/MathTest.php:21</error>
+            </testcase>
+          </testsuite>
+        </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.status).toBe("fail");
+      expect(result.failures![0].file).toBe("MathTest.php");
+      expect(result.failures![0].line).toBe(21);
+      expect(result.failures![0].message).toBe("DivisionByZeroError: Division by zero");
+      expect(result.failures![0].rule).toBe("DivisionByZeroError");
+    });
+  });
+
+  describe("pest (PHP) output", () => {
+    it("handles nested testsuites and extracts file:line from Pest stack frames", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <testsuites>
+          <testsuite name="phpunit.xml" tests="3" assertions="2" errors="1" failures="1" skipped="0" time="0.012">
+            <testsuite name="Tests" tests="3" assertions="2" errors="1" failures="1" skipped="0" time="0.012">
+              <testsuite name="Tests\\MathTest" file="tests/MathTest.php" tests="3" assertions="2" errors="1" failures="1" skipped="0" time="0.012">
+                <testcase name="it adds two numbers correctly" file="tests/MathTest.php::it adds two numbers correctly" class="Tests\\MathTest" classname="Tests.MathTest" assertions="1" time="0.005"/>
+                <testcase name="it multiplies two numbers correctly" file="tests/MathTest.php::it multiplies two numbers correctly" class="Tests\\MathTest" classname="Tests.MathTest" assertions="1" time="0.007">
+                  <failure type="PHPUnit\\Framework\\ExpectationFailedException">it multiplies two numbers correctlyFailed asserting that 12 is identical to 99.
+at tests/MathTest.php:8</failure>
+                </testcase>
+                <testcase name="it does not divide by zero" file="tests/MathTest.php::it does not divide by zero" class="Tests\\MathTest" classname="Tests.MathTest" assertions="0" time="0.0003">
+                  <error type="DivisionByZeroError">it does not divide by zeroDivisionByZeroError: Division by zero
+at tests/MathTest.php:12</error>
+                </testcase>
+              </testsuite>
+            </testsuite>
+          </testsuite>
+        </testsuites>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 1 passed");
+      expect(result.failures).toHaveLength(2);
+      expect(result.failures![0].file).toBe("tests/MathTest.php");
+      expect(result.failures![0].line).toBe(8);
+      expect(result.failures![0].message).toBe("Failed asserting that 12 is identical to 99.");
+      expect(result.failures![0].rule).toBe("PHPUnit\\Framework\\ExpectationFailedException");
+      expect(result.failures![1].file).toBe("tests/MathTest.php");
+      expect(result.failures![1].line).toBe(12);
+      expect(result.failures![1].message).toBe("DivisionByZeroError: Division by zero");
+      expect(result.failures![1].rule).toBe("DivisionByZeroError");
+    });
+
+    it("strips '::test name' suffix from file attributes", async () => {
+      const xml = `<testsuite name="Tests\\MathTest" file="tests/MathTest.php" tests="1" failures="1" errors="0">
+        <testcase name="it fails" file="tests/MathTest.php::it fails" classname="Tests.MathTest">
+          <failure type="Error">it failsOops
+at tests/MathTest.php:5</failure>
+        </testcase>
+      </testsuite>`;
+      const result = await parser.parse(makeCtx(xml, "/project"));
+      expect(result.failures![0].file).toBe("tests/MathTest.php");
+    });
+  });
+
   describe("multi-suite totals", () => {
     it("failures and errors summed across suites", async () => {
       const xml = `<testsuites>
@@ -337,6 +536,24 @@ Received: 12
       expect(result.status).toBe("fail");
       expect(result.summary).toBe("2 failed, 2 passed");
       expect(result.failures).toHaveLength(2);
+    });
+
+    it("collects direct and nested testcases without double counting", async () => {
+      const xml = `<testsuites>
+        <testsuite name="root" tests="3" failures="2" errors="0">
+          ${FAILING("direct_failure", "RootTest", "direct broke")}
+          <testsuite name="nested" tests="2" failures="1" errors="0">
+            ${PASSING("nested_pass", "NestedTest")}
+            ${FAILING("nested_failure", "NestedTest", "nested broke")}
+          </testsuite>
+        </testsuite>
+      </testsuites>`;
+      const result = await parser.parse(makeCtx(xml));
+      expect(result.status).toBe("fail");
+      expect(result.summary).toBe("2 failed, 1 passed");
+      expect(result.failures).toHaveLength(2);
+      expect(result.failures![0].message).toBe("direct broke");
+      expect(result.failures![1].message).toBe("nested broke");
     });
   });
 
