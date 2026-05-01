@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This project has been migrated to the [`pi-userland`](https://github.com/robhowley/pi-userland) monorepo. New package versions are still being published under [`@robhowley/pi-structured-return`](https://www.npmjs.com/package/@robhowley/pi-structured-return), but this standalone repo is deprecated.
+
 # pi-structured-return
 
 A [Pi](https://pi.dev/) extension that adds a `structured_return` tool alongside `bash`, returning compact parsed results with full logs — 60–95% fewer tokens without losing signal.
